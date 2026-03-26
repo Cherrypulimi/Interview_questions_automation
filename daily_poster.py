@@ -69,13 +69,13 @@ class DailyInterviewPoster:
             
         return current_topic, combined_topic
 
-    def generate_questions(self, current_topic, combined_topic):
-        print(f"Generating questions for topic: {current_topic}")
+    def generate_content(self, current_topic, combined_topic):
+        print(f"Generating questions and post description for topic: {current_topic}")
         recent = self.state.get("recent_questions", [])
         recent_str = "\\n- ".join(recent[-30:]) if recent else "None"
         
         prompt = f"""
-        You are an expert technical interviewer for {self.subject['tool_name']}.
+        You are an expert technical interviewer and LinkedIn content creator for {self.subject['tool_name']}.
         Target Audience: {self.subject['audience']}
         Skill Description: {self.subject['skill_description']}
         
@@ -90,14 +90,18 @@ class DailyInterviewPoster:
         Avoid generating ANY questions that exactly match these recently asked questions:
         - {recent_str}
         
-        Task: Generate EXACTLY 7 interview questions related to the Primary Topic.
-        For each question, provide a practical, highly concise solution (maximum 40 words for the solution).
+        Task: 
+        1. Write an engaging LinkedIn post description (around 3-4 sentences) introducing the topic and encouraging followers to swipe through the 7 interview questions. Include relevant hashtags like #interviewprep #dataengineering.
+        2. Generate EXACTLY 7 interview questions related to the Primary Topic. For each question, provide a practical, highly concise solution (maximum 40 words for the solution).
         
-        Return the result STRICTLY as a JSON array of objects with 'question' and 'solution' keys:
-        [
-          {{"question": "...", "solution": "..."}},
-          ...
-        ]
+        Return the result STRICTLY as a JSON object matching this exact schema:
+        {{
+          "post_description": "...",
+          "questions": [
+            {{"question": "...", "solution": "..."}},
+            ...
+          ]
+        }}
         """
         
         # Enforce JSON output using generation config
@@ -110,10 +114,10 @@ class DailyInterviewPoster:
         )
         
         try:
-            questions_data = json.loads(response.text)
-            if len(questions_data) > 7:
-                questions_data = questions_data[:7]
-            return questions_data
+            data = json.loads(response.text)
+            if len(data["questions"]) > 7:
+                data["questions"] = data["questions"][:7]
+            return data
         except json.JSONDecodeError:
             print("Failed to decode JSON from Gemini. Raw response:")
             print(response.text)
@@ -258,18 +262,16 @@ class DailyInterviewPoster:
         
         return asset_urn
 
-    def post_to_linkedin(self, topic, asset_urns):
+    def post_to_linkedin(self, post_description, asset_urns):
         url = "https://api.linkedin.com/v2/ugcPosts"
         media_items = [{"status": "READY", "media": urn} for urn in asset_urns]
-        
-        text = f"🚀 Daily {self.subject['tool_name']} Interview Prep! 🚀\\n\\nToday's Topic: {topic}\\n\\nSwipe through the 7 technical questions for your interview preparation. Save this post to refer back to later! 👇\\n\\n#interviewprep #dataengineering #spark #databricks"
         
         payload = {
             "author": self.user_urn,
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
-                    "shareCommentary": {"text": text},
+                    "shareCommentary": {"text": post_description},
                     "shareMediaCategory": "IMAGE",
                     "media": media_items
                 }
@@ -285,8 +287,10 @@ class DailyInterviewPoster:
         # 1. State
         current_topic, combined_topic = self.select_topic()
         
-        # 2. Extract Questions
-        questions = self.generate_questions(current_topic, combined_topic)
+        # 2. Extract Questions and Description
+        generated_data = self.generate_content(current_topic, combined_topic)
+        post_description = generated_data["post_description"]
+        questions = generated_data["questions"]
         
         # 3. Images + Upload
         asset_urns = []
@@ -299,7 +303,7 @@ class DailyInterviewPoster:
         
         # 4. Post
         print("Publishing to LinkedIn feed...")
-        post_response = self.post_to_linkedin(current_topic, asset_urns)
+        post_response = self.post_to_linkedin(post_description, asset_urns)
         
         # 5. Update State
         self.state["pending_topics"].pop(0)
@@ -320,6 +324,7 @@ class DailyInterviewPoster:
             "date": datetime.now().isoformat(),
             "topic": current_topic,
             "combined_topic": combined_topic,
+            "post_description": post_description,
             "questions_posted": questions,
             "linkedin_urn": post_response.get("id") # The X-RestLi-Id or URN from response
         }
