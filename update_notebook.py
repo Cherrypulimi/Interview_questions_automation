@@ -4,165 +4,324 @@ import json
 with open('data_1.ipynb', 'r', encoding='utf-8') as f:
     nb = nbformat.read(f, as_version=4)
 
-new_code = """import re
-import requests
+new_code = """import os
 import json
-import os
+import random
+import requests
+from datetime import datetime
 import google.generativeai as genai
 from html2image import Html2Image
 from PIL import Image
 
-class LinkedinAutomate:
-    def __init__(self, access_token, gemini_api_key):
-        self.access_token = access_token
-        self.gemini_api_key = gemini_api_key
+# PATHS
+DIR_PATH = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
+SUBJECT_PATH = os.path.join(DIR_PATH, "subject.json")
+STATE_PATH = os.path.join(DIR_PATH, "state.json")
+HISTORY_PATH = os.path.join(DIR_PATH, "history.jsonl")
+TOKEN_PATH = os.path.join(DIR_PATH, "linked_in_token.json")
+
+def load_json(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def save_json(data, path):
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
+
+def append_history(entry):
+    with open(HISTORY_PATH, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(entry) + "\\n")
+
+class DailyInterviewPoster:
+    def __init__(self):
+        # Load configs
+        self.config = load_json(TOKEN_PATH)
+        self.subject = load_json(SUBJECT_PATH)
+        self.state = load_json(STATE_PATH)
+        
+        self.access_token = self.config["access_token"]
+        self.gemini_api_key = self.config["gemini_api_key"]
+        
         # Configure Gemini
         genai.configure(api_key=self.gemini_api_key)
         self.model = genai.GenerativeModel('gemini-2.5-flash')
         
+        # Configure LinkedIn
         self.headers = {
             'Authorization': f'Bearer {self.access_token}',
             'X-Restli-Protocol-Version': '2.0.0',
-            'LinkedIn-Version': '202401' # Good practice
+            'LinkedIn-Version': '202401'
         }
         self.user_urn = self.get_user_urn()
         self.hti = Html2Image()
+        self.hti.browser.flags = ['--no-sandbox', '--disable-gpu', '--hide-scrollbars']
 
     def get_user_urn(self):
         url = "https://api.linkedin.com/v2/userinfo"
-        response = requests.get(url, headers={'Authorization': f'Bearer {self.access_token}'})
-        user_info = response.json()
-        # Extract sub which maps to person URN
-        return f"urn:li:person:{user_info['sub']}"
+        res = requests.get(url, headers={'Authorization': f'Bearer {self.access_token}'})
+        res.raise_for_status()
+        return f"urn:li:person:{res.json()['sub']}"
 
-    def generate_proverbs(self):
-        print("Generating proverbs...")
-        prompt = "Generate 2 short, inspiring proverbs. Return them separated by a newline, with no other text, numbering, or formatting."
-        response = self.model.generate_content(prompt)
-        proverbs = [line.strip() for line in response.text.strip().split('\\n') if line.strip()][:2]
-        return proverbs
-
-    def create_html_images(self, proverbs):
-        print("Creating images from proverbs...")
-        image_paths = []
-        for i, proverb in enumerate(proverbs):
-            html_content = f\"\"\"
-            <div style="background-color: white; color: black; width: 800px; height: 400px; 
-                        display: flex; align-items: center; justify-content: center; 
-                        font-family: Arial, sans-serif; font-size: 40px; text-align: center; 
-                        padding: 40px; box-sizing: border-box;">
-                {proverb}
-            </div>
-            \"\"\"
-            output_file = f'proverb_{i+1}.png'
-            self.hti.screenshot(html_str=html_content, save_as=output_file, size=(800, 400))
+    def select_topic(self):
+        if not self.state["pending_topics"]:
+            return "General Review", None
+        
+        current_topic = self.state["pending_topics"][0]
+        combined_topic = None
+        
+        if self.state["covered_topics"]:
+            combined_topic = random.choice(self.state["covered_topics"])
             
-            # STRIP ALPHA CHANNEL: load with PIL, convert to RGB, and save back as PNG
-            # This ensures no transparent background gets rendered as black on LinkedIn or elsewhere.
-            with Image.open(output_file) as img:
-                rgb_img = img.convert('RGB')
-                rgb_img.save(output_file, 'PNG')
+        return current_topic, combined_topic
 
-            image_paths.append(output_file)
-        return image_paths
+    def generate_content(self, current_topic, combined_topic):
+        print(f"Generating questions and post description for topic: {current_topic}")
+        recent = self.state.get("recent_questions", [])
+        recent_str = "\\n- ".join(recent[-30:]) if recent else "None"
+        
+        prompt = f\"\"\"
+        You are an expert technical interviewer and LinkedIn content creator for {self.subject['tool_name']}.
+        Target Audience: {self.subject['audience']}
+        Skill Description: {self.subject['skill_description']}
+        
+        Today's Primary Topic: {current_topic}
+        \"\"\"
+        
+        if combined_topic:
+            prompt += f"\\nOptionally, you can blend in concepts from this previously covered topic: {combined_topic}"
+            
+        prompt += f\"\"\"
+        
+        Avoid generating ANY questions that exactly match these recently asked questions:
+        - {recent_str}
+        
+        Task: 
+        1. Write an engaging LinkedIn post description (around 3-4 sentences) introducing the topic and encouraging followers to swipe through the 7 interview questions. Include relevant hashtags like #interviewprep #dataengineering.
+        2. Generate EXACTLY 7 interview questions related to the Primary Topic. For each question, provide a practical, highly concise solution (maximum 40 words for the solution).
+        
+        Return the result STRICTLY as a JSON object matching this exact schema:
+        {{
+          "post_description": "...",
+          "questions": [
+            {{"question": "...", "solution": "..."}},
+            ...
+          ]
+        }}
+        \"\"\"
+        
+        response = self.model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json",
+                temperature=0.7
+            )
+        )
+        
+        try:
+            data = json.loads(response.text)
+            if len(data["questions"]) > 7:
+                data["questions"] = data["questions"][:7]
+            return data
+        except json.JSONDecodeError:
+            print("Failed to decode JSON from Gemini. Raw response:")
+            print(response.text)
+            raise
 
-    def register_image_upload(self):
+    def generate_image(self, index, topic, question_obj):
+        q_text = question_obj['question'].replace('"', '&quot;').replace("'", '&apos;')
+        s_text = question_obj['solution'].replace('"', '&quot;').replace("'", '&apos;')
+        
+        html_content = f\"\"\"
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                width: 1080px;
+                height: 1080px;
+                background-color: #FFFFFF;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                position: relative;
+                overflow: hidden;
+            }}
+            .top-left-circle {{
+                position: absolute;
+                top: 0; left: 0;
+                width: 250px; height: 250px;
+                background-color: #FFD700;
+                border-bottom-right-radius: 250px;
+            }}
+            .top-right-circle {{
+                position: absolute;
+                top: 0; right: 0;
+                width: 250px; height: 250px;
+                background-color: #FF4500;
+                border-bottom-left-radius: 250px;
+            }}
+            .ribbon {{
+                width: 100%;
+                background-color: #E6E6FA;
+                padding: 30px 250px;
+                box-sizing: border-box;
+                text-align: center;
+                margin-top: 100px;
+            }}
+            .ribbon-text {{
+                font-size: 36px;
+                font-weight: bold;
+                color: #333333;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }}
+            .content {{
+                padding: 80px 100px;
+                color: #000000;
+            }}
+            .question-box {{
+                font-size: 42px;
+                font-weight: 700;
+                line-height: 1.4;
+                margin-bottom: 50px;
+            }}
+            .solution-box {{
+                font-size: 36px;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #222222;
+                background-color: #F8F9FA;
+                padding: 40px;
+                border-left: 8px solid #FFD700;
+                border-radius: 8px;
+            }}
+            .footer {{
+                position: absolute;
+                bottom: 40px;
+                right: 60px;
+                font-size: 24px;
+                color: #777777;
+                font-style: italic;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="top-left-circle"></div>
+            <div class="top-right-circle"></div>
+            <div class="ribbon">
+                <div class="ribbon-text">{topic}</div>
+            </div>
+            <div class="content">
+                <div class="question-box">Q: {q_text}</div>
+                <div class="solution-box"><strong>Solution:</strong><br>{s_text}</div>
+            </div>
+            <div class="footer">#{index}/7 Daily {self.subject['tool_name']} Prep</div>
+        </body>
+        </html>
+        \"\"\"
+        
+        output_file = f"question_{index}.png"
+        self.hti.screenshot(html_str=html_content, save_as=output_file, size=(1080, 1080))
+        
+        with Image.open(output_file) as img:
+            rgb_img = img.convert('RGB')
+            rgb_img.save(output_file, 'PNG')
+            
+        return output_file
+
+    def register_and_upload(self, file_path):
         url = "https://api.linkedin.com/v2/assets?action=registerUpload"
         payload = {
             "registerUploadRequest": {
                 "recipes": ["urn:li:digitalmediaRecipe:feedshare-image"],
                 "owner": self.user_urn,
-                "serviceRelationships": [
-                    {
-                        "relationshipType": "OWNER",
-                        "identifier": "urn:li:userGeneratedContent"
-                    }
-                ]
+                "serviceRelationships": [{"relationshipType": "OWNER", "identifier": "urn:li:userGeneratedContent"}]
             }
         }
-        response = requests.post(url, headers=self.headers, json=payload)
-        response.raise_for_status()
-        response_data = response.json()
-        upload_url = response_data['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
-        asset_urn = response_data['value']['asset']
-        return upload_url, asset_urn
-
-    def upload_local_image(self, upload_url, file_path):
+        res = requests.post(url, headers=self.headers, json=payload)
+        res.raise_for_status()
+        data = res.json()
+        upload_url = data['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
+        asset_urn = data['value']['asset']
+        
         with open(file_path, 'rb') as f:
             image_data = f.read()
-        
-        headers = {
+            
+        upload_headers = {
             'Authorization': f'Bearer {self.access_token}',
-            'Content-Type': 'image/png'  # Force LinkedIn to perceive this as pure PNG
+            'Content-Type': 'image/png'
         }
-        response = requests.post(upload_url, data=image_data, headers=headers)
-        response.raise_for_status()
-        return response.status_code
-
-    def post_images_to_feed(self, asset_urns):
-        print("Posting to LinkedIn...")
-        url = "https://api.linkedin.com/v2/ugcPosts"
+        upload_res = requests.post(upload_url, data=image_data, headers=upload_headers)
+        upload_res.raise_for_status()
         
-        media_items = []
-        for urn in asset_urns:
-            media_items.append({
-                "status": "READY",
-                "media": urn
-            })
+        return asset_urn
 
+    def post_to_linkedin(self, post_description, asset_urns):
+        url = "https://api.linkedin.com/v2/ugcPosts"
+        media_items = [{"status": "READY", "media": urn} for urn in asset_urns]
+        
         payload = {
             "author": self.user_urn,
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
-                    "shareCommentary": {
-                        "text": "Here are some inspiring proverbs for the day! ✨\\n#proverbs #inspiration #dailyquotes"
-                    },
+                    "shareCommentary": {"text": post_description},
                     "shareMediaCategory": "IMAGE",
                     "media": media_items
                 }
             },
-            "visibility": {
-                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-            }
+            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
         }
-
-        response = requests.post(url, headers=self.headers, json=payload)
-        response.raise_for_status()
-        return response.json()
-
-    def main_func(self):
-        proverbs = self.generate_proverbs()
-        print(f"Generated Proverbs: {proverbs}")
         
-        image_paths = self.create_html_images(proverbs)
-        print(f"Generated Images: {image_paths}")
+        res = requests.post(url, headers=self.headers, json=payload)
+        res.raise_for_status()
+        return res.json()
+
+    def run(self):
+        current_topic, combined_topic = self.select_topic()
+        
+        generated_data = self.generate_content(current_topic, combined_topic)
+        post_description = generated_data["post_description"]
+        questions = generated_data["questions"]
         
         asset_urns = []
-        for path in image_paths:
-            upload_url, asset_urn = self.register_image_upload()
-            print(f"Registered upload for {path}. Uploading...")
-            status = self.upload_local_image(upload_url, path)
-            print(f"Upload status: {status}")
-            asset_urns.append(asset_urn)
+        for i, q in enumerate(questions):
+            print(f"Generating & uploading image {i+1}/7...")
+            img_path = self.generate_image(i+1, current_topic, q)
+            urn = self.register_and_upload(img_path)
+            asset_urns.append(urn)
+        
+        print(f"Publishing to LinkedIn feed with description: '{post_description[:50]}...'")
+        post_response = self.post_to_linkedin(post_description, asset_urns)
+        
+        if self.state["pending_topics"]:
+            self.state["pending_topics"].pop(0)
+            self.state["covered_topics"].append(current_topic)
+        
+        for q in questions:
+            self.state["recent_questions"].append(q["question"])
             
-        print(f"Creating post with assets: {asset_urns}")
-        post_response = self.post_images_to_feed(asset_urns)
-        print(f"Post Response: {json.dumps(post_response, indent=2)}")
+        if len(self.state["recent_questions"]) > 50:
+            self.state["recent_questions"] = self.state["recent_questions"][-50:]
+            
+        save_json(self.state, STATE_PATH)
+        
+        history_entry = {
+            "date": datetime.now().isoformat(),
+            "topic": current_topic,
+            "combined_topic": combined_topic,
+            "post_description": post_description,
+            "questions_posted": questions,
+            "linkedin_urn": post_response.get("id")
+        }
+        append_history(history_entry)
+        
+        print("✅ Run complete!")
 
-# Read tokens
-config_path = 'linked_in_token.json'
-with open(config_path, 'r', encoding='utf-8') as f:
-    config = json.load(f)
-
-access_token = config['access_token']
-gemini_api_key = config['gemini_api_key']
-
-bot = LinkedinAutomate(access_token, gemini_api_key)
-bot.main_func()
+poster = DailyInterviewPoster()
+# poster.run()  # Uncomment to execute inside the notebook automatically
 """
 
-# Update the second cell (index 1)
 nb.cells[1].source = new_code
 
 with open('data_1.ipynb', 'w', encoding='utf-8') as f:
