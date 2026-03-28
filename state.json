@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "PySpark DataFrame Basics (Schemas, Select, Filter, WithColumn)",
     "PySpark Data Manipulation (Joins, Aggregations, GroupBy, Window Functions)",
     "Reading & Writing Data in PySpark (CSV, JSON, Parquet, Avro, JDBC)",
     "Spark SQL & User Defined Functions (UDFs, pandas UDFs)",
@@ -25,7 +24,8 @@
   ],
   "covered_topics": [
     "Introduction to Apache Spark & PySpark (Architecture, RDD vs DataFrame)",
-    "PySpark RDD Programming Basics (Transformations vs Actions, Lazy Evaluation)"
+    "PySpark RDD Programming Basics (Transformations vs Actions, Lazy Evaluation)",
+    "PySpark DataFrame Basics (Schemas, Select, Filter, WithColumn)"
   ],
   "recent_questions": [
     "What is Apache Spark, and why is it popular for big data processing?",
@@ -41,6 +41,13 @@
     "How does Spark's RDD lineage graph contribute to its fault tolerance and lazy evaluation model? Describe what the lineage graph represents and its role in recomputing lost partitions.",
     "Explain the concept of immutability in the context of Spark RDDs. Why is immutability a crucial design principle for RDDs, especially in a distributed computing environment?",
     "Differentiate between narrow and wide transformations in PySpark RDDs, providing an example for each. How does this distinction impact Spark's execution plan and fault tolerance?",
-    "While DataFrames are generally preferred, describe a specific use case or scenario where directly working with RDDs in PySpark might still be advantageous or necessary, especially when dealing with highly unstructured data or custom serialization. How do RDD transformations and actions facilitate such a use case?"
+    "While DataFrames are generally preferred, describe a specific use case or scenario where directly working with RDDs in PySpark might still be advantageous or necessary, especially when dealing with highly unstructured data or custom serialization. How do RDD transformations and actions facilitate such a use case?",
+    "Explain the importance of defining explicit schemas when creating or reading PySpark DataFrames. Provide an example of how to define a schema programmatically using `StructType` and `StructField`, and discuss its advantages over schema inference.",
+    "Demonstrate various ways to select specific columns from a PySpark DataFrame. How would you rename a column during selection, and what are the implications of using `select` for performance?",
+    "Describe how to filter rows in a PySpark DataFrame based on single and multiple conditions. Illustrate the use of `filter()` or `where()` with examples, including logical operators.",
+    "Explain the purpose and common use cases of the `withColumn()` transformation in PySpark. Provide examples for adding a new column, modifying an existing one, and casting data types.",
+    "Discuss the mapping between native Python types and PySpark SQL data types. Why is it crucial to understand and correctly specify data types when working with DataFrames, especially for performance and data integrity?",
+    "Explain the concept of immutability as it applies to PySpark DataFrames. When you apply a transformation like `withColumn()`, what actually happens to the original DataFrame, and how does this design principle contribute to Spark's reliability?",
+    "How does Spark's Catalyst Optimizer benefit DataFrame operations like `select` and `filter`? Provide a conceptual overview and an example of an optimization it might perform."
   ]
 }
