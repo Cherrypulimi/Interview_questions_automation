@@ -1100,3 +1100,363 @@ Solution: This task involves several PySpark data manipulation techniques: filte
     ```
 
 
+--- Date: 2026-03-29 15:00:58 ---
+Topic: Reading & Writing Data in PySpark (CSV, JSON, Parquet, Avro, JDBC)
+Description: Mastering data ingestion and egress is fundamental for any Data Engineer or Spark Developer! This week, we're diving deep into reading and writing various data formats in PySpark, from common CSVs and JSONs to powerful Parquet, Avro, and JDBC connections. Swipe through these 7 essential interview questions to test your knowledge and sharpen your skills. Let's get interview-ready! #interviewprep #dataengineering #pyspark #databricks #sparkdeveloper
+
+Q1: When reading a CSV file into a PySpark DataFrame, describe how to handle headers, schema inference, and custom delimiters. Discuss the trade-offs between inferring a schema and providing an explicit one.
+Solution: Reading a CSV file in PySpark is straightforward using `spark.read.csv()`. You can specify options for handling headers, schema inference, and custom delimiters.
+
+*   Handling Headers: Use the `header` option.
+    ```python
+    df_with_header = spark.read.csv(
+        "path/to/data.csv", 
+        header=True
+    )
+    ```
+
+*   Schema Inference: Use the `inferSchema` option. When `inferSchema=True`, Spark will sample the data to determine column types. For custom delimiters, use the `sep` option.
+    ```python
+    df_inferred = spark.read.csv(
+        "path/to/data.csv", 
+        header=True, 
+        inferSchema=True, 
+        sep=";"
+    )
+    ```
+
+*   Trade-offs of `inferSchema` vs. Explicit Schema:
+    *   `inferSchema=True` (Pros): Convenience, especially for exploratory data analysis or when the schema is unknown. Reduces boilerplate code.
+    *   `inferSchema=True` (Cons): Can be very slow for large datasets as it requires an additional pass over the data. It might infer incorrect data types (e.g., all numbers as `LongType` instead of `IntegerType` or `DoubleType`), leading to potential data quality issues or performance bottlenecks. It's not suitable for production pipelines where schema stability is critical.
+    *   Explicit Schema (Pros): Faster read times (no extra pass), ensures data quality and type correctness, provides robustness against data changes, and improves readability and maintainability of code. Essential for production workloads.
+    *   Explicit Schema (Cons): Requires manual definition, which can be verbose for DataFrames with many columns.
+
+*   Example with Explicit Schema:
+    ```python
+    from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+
+    schema = StructType([
+        StructField("id", IntegerType(), True),
+        StructField("name", StringType(), True),
+        StructField("value", DoubleType(), True)
+    ])
+
+    df_explicit = spark.read.csv(
+        "path/to/data.csv", 
+        header=True, 
+        schema=schema,
+        sep=","
+    )
+    df_explicit.printSchema()
+    ```
+
+Q2: You have a PySpark DataFrame and need to persist it to a data lake in Parquet format. Explain how to write the DataFrame, specifying the write mode and partitioning the output by a specific column. Why is Parquet generally preferred over CSV or JSON for analytical workloads in Spark?
+Solution: Writing a PySpark DataFrame to Parquet format involves using the `df.write.parquet()` method. Parquet is a columnar storage format optimized for analytical queries.
+
+*   Writing with Write Mode and Partitioning:
+    ```python
+    # Assuming 'df' is your PySpark DataFrame
+    # Example DataFrame
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder.appName("ParquetWrite").getOrCreate()
+    data = [("A", 1, 100), ("B", 2, 150), ("A", 3, 200), ("C", 1, 120)]
+    columns = ["category", "id", "value"]
+    df = spark.createDataFrame(data, columns)
+
+    output_path = "/tmp/my_parquet_data"
+
+    df.write \
+      .mode("overwrite") \
+      .partitionBy("category") \
+      .parquet(output_path)
+
+    # To verify, you can read it back
+    # df_read = spark.read.parquet(output_path)
+    # df_read.show()
+    ```
+    *   `mode("overwrite")`: Specifies the write mode. Other common modes include `append`, `ignore`, and `errorifexists`. `overwrite` will delete the existing data at the path before writing.
+    *   `partitionBy("category")`: This crucial option physically partitions the data on the file system based on the unique values in the `category` column. This creates subdirectories (e.g., `/tmp/my_parquet_data/category=A/`, `/tmp/my_parquet_data/category=B/`).
+
+*   Why Parquet is Preferred:
+    1.  Columnar Storage: Unlike row-based formats (CSV, JSON), Parquet stores data column by column. This means when a query only needs specific columns, it only reads those columns, significantly reducing I/O operations and improving performance.
+    2.  Efficient Compression and Encoding: Parquet supports various compression codecs (e.g., Snappy, Gzip, LZO) and encoding schemes (e.g., run-length encoding, dictionary encoding) that are highly effective for columnar data, leading to smaller file sizes and faster reads.
+    3.  Schema Evolution: Parquet supports schema evolution, allowing you to add new columns or modify existing ones without breaking backward compatibility for older readers.
+    4.  Predicate Pushdown: Spark's Catalyst Optimizer can leverage Parquet's columnar nature to push down filters to the storage layer. This means only relevant data blocks are read from disk, further enhancing query performance (e.g., `WHERE category = 'A'` will only read files in the `category=A` subdirectory).
+    5.  Splittability: Parquet files are splittable, meaning they can be processed in parallel by multiple tasks in a distributed environment like Spark.
+
+Q3: You've received a large JSON file where each record spans multiple lines. How would you read this file into a PySpark DataFrame? Additionally, explain how to define an explicit schema for the JSON data to ensure data quality and avoid the overhead of schema inference.
+Solution: Reading multi-line JSON files requires a specific option in Spark. Defining an explicit schema is crucial for performance and data integrity.
+
+*   Reading Multi-line JSON:
+    To read a JSON file where a single JSON object might be spread across multiple lines (e.g., pretty-printed JSON), you must set the `multiline` option to `True` in `spark.read.json()`.
+    ```python
+    # Example of a multi-line JSON string
+    json_data_multiline = """
+    [{"id": 1, "name": "Alice", "details": {"age": 30, "city": "NY"}},
+     {"id": 2, "name": "Bob", "details": {"age": 24, "city": "LA"}}]
+    """
+
+    # Create a temporary file for demonstration
+    with open("/tmp/multi_line.json", "w") as f:
+        f.write(json_data_multiline)
+
+    df_json_multiline = spark.read.option("multiline", "true").json("/tmp/multi_line.json")
+    df_json_multiline.printSchema()
+    df_json_multiline.show()
+    ```
+
+*   Defining an Explicit Schema for JSON:
+    Explicitly defining the schema using `StructType` and `StructField` is best practice for JSON, especially for complex nested structures. This avoids the performance hit of `inferSchema` and ensures correct data types.
+
+    ```python
+    from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+    json_schema = StructType([
+        StructField("id", IntegerType(), True),
+        StructField("name", StringType(), True),
+        StructField("details", StructType([
+            StructField("age", IntegerType(), True),
+            StructField("city", StringType(), True)
+        ]), True)
+    ])
+
+    # Read the same multi-line JSON with the explicit schema
+    df_json_explicit_schema = spark.read \
+                                .option("multiline", "true") \
+                                .schema(json_schema) \
+                                .json("/tmp/multi_line.json")
+
+    df_json_explicit_schema.printSchema()
+    df_json_explicit_schema.show()
+    ```
+
+*   Benefits of Explicit Schema:
+    *   Performance: No need for Spark to make an extra pass over the data to infer types, leading to faster job startup and execution.
+    *   Data Integrity: Guarantees that data types are as expected, preventing issues like `StringType` being inferred for numeric fields or `null` values being misinterpreted.
+    *   Robustness: Makes the data pipeline more resilient to changes in the source data (e.g., if a field temporarily contains unexpected values, it won't break the schema).
+    *   Readability: The schema definition serves as clear documentation for the data structure.
+
+Q4: Describe how to connect PySpark to an external relational database (e.g., PostgreSQL, MySQL) using JDBC to read data into a DataFrame. Provide a practical example, including how to specify connection properties and address common considerations like driver availability.
+Solution: PySpark can connect to various relational databases using Java Database Connectivity (JDBC) drivers. This allows you to read tables directly into DataFrames.
+
+*   JDBC Connection Steps:
+    1.  Obtain JDBC Driver: Ensure the appropriate JDBC driver JAR file for your database is available to your Spark application. For example, for PostgreSQL, you'd need `postgresql-42.x.x.jar`. In Databricks, these are often pre-installed or can be attached to a cluster. In a standalone Spark cluster, you'd include it using `--jars` when submitting your application.
+    2.  Construct JDBC URL: The URL specifies the database type, host, port, and database name (e.g., `jdbc:postgresql://localhost:5432/mydatabase`).
+    3.  Specify Connection Properties: Provide credentials (username, password) and the driver class name.
+
+*   Practical Example (PostgreSQL):
+    Let's assume you have a PostgreSQL database named `mydatabase` with a table `users` and a user `sparkuser` with password `sparkpass`.
+
+    ```python
+    # Ensure the JDBC driver is available on your cluster/job classpath.
+    # For local testing, you might need to download the jar and add it to spark-submit --jars
+    # e.g., --jars /path/to/postgresql-42.x.x.jar
+
+    jdbc_url = "jdbc:postgresql://localhost:5432/mydatabase"
+    db_table = "users"
+
+    connection_properties = {
+        "user": "sparkuser",
+        "password": "sparkpass",
+        "driver": "org.postgresql.Driver" # Specific driver class for PostgreSQL
+    }
+
+    # Read data from the 'users' table
+    df_users = spark.read.format("jdbc") \
+                         .option("url", jdbc_url) \
+                         .option("dbtable", db_table) \
+                         .options(connection_properties) \
+                         .load()
+
+    df_users.printSchema()
+    df_users.show()
+
+    # Example of writing back (optional)
+    # df_users.write.format("jdbc") \
+    #           .option("url", jdbc_url) \
+    #           .option("dbtable", "new_users_table") \
+    #           .options(connection_properties) \
+    #           .mode("overwrite") \
+    #           .save()
+    ```
+
+*   Common Considerations:
+    *   Driver Availability: The most frequent issue is the JDBC driver JAR not being on the Spark classpath. For Databricks, you typically upload the JAR to a cluster library or use a pre-installed one. For standalone Spark, use `--jars` or configure `spark.jars`.
+    *   Connection Security: Avoid hardcoding credentials. Use secrets management solutions (e.g., Databricks Secrets, HashiCorp Vault) for production environments.
+    *   Performance: For very large tables, reading the entire table into a single DataFrame can be inefficient. Consider using `numPartitions`, `partitionColumn`, `lowerBound`, and `upperBound` options to enable parallel reads from the database. This distributes the read workload across multiple Spark tasks.
+    *   Database Load: Be mindful of the load you place on the source database. Parallel reads can be aggressive. Coordinate with DBAs.
+    *   Data Types: Spark maps JDBC data types to its own SQL types. Be aware of potential type mismatches or precision loss.
+
+Q5: When reading data from semi-structured formats like CSV or JSON, malformed records or data that doesn't conform to the expected schema can cause job failures. Explain how PySpark's `mode` options can handle such scenarios and provide examples of how to use them.
+Solution: PySpark provides `mode` options when reading data to control how it handles malformed records. These modes are crucial for building robust data pipelines that can gracefully deal with imperfect data.
+
+*   Understanding `mode` Options: The `mode` option is specified using `.option("mode", "...")` and applies to readers like CSV, JSON, and Avro. There are three primary modes:
+    1.  `PERMISSIVE` (Default): Spark will try to parse all lines. If it encounters a malformed record, it will set all fields to `null` for that record and place the corrupted string into a new column named `_corrupt_record` (if specified in the schema or automatically added if `inferSchema` is true and a corrupted record is found). This mode allows the job to complete without failing.
+    2.  `DROPMALFORMED`: Spark will simply drop any rows that contain malformed records. These records will not appear in the resulting DataFrame.
+    3.  `FAILFAST`: If Spark encounters *any* malformed record, it will immediately throw an exception and fail the job. This is useful in development or strict environments where any data quality issue should halt processing.
+
+*   Example with CSV Data:
+    Let's create a CSV file with some valid and some malformed records.
+    ```python
+    csv_data = """
+    id,name,age
+    1,Alice,30
+    2,Bob,25
+    3,Charlie,invalid_age
+    4,David,35
+    """
+    with open("/tmp/corrupt_data.csv", "w") as f:
+        f.write(csv_data)
+
+    from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+    schema = StructType([
+        StructField("id", IntegerType(), True),
+        StructField("name", StringType(), True),
+        StructField("age", IntegerType(), True)
+    ])
+
+    # 1. PERMISSIVE Mode (Default behavior for CSV with schema)
+    print("\n--- PERMISSIVE Mode ---")
+    df_permissive = spark.read \
+                           .option("header", "true") \
+                           .schema(schema) \
+                           .option("mode", "PERMISSIVE") \
+                           .csv("/tmp/corrupt_data.csv")
+    df_permissive.printSchema()
+    df_permissive.show()
+    # Notice 'invalid_age' resulted in null for 'age' column.
+    # If `_corrupt_record` column was added to schema, the raw string would be there.
+
+    # 2. DROPMALFORMED Mode
+    print("\n--- DROPMALFORMED Mode ---")
+    df_drop = spark.read \
+                     .option("header", "true") \
+                     .schema(schema) \
+                     .option("mode", "DROPMALFORMED") \
+                     .csv("/tmp/corrupt_data.csv")
+    df_drop.printSchema()
+    df_drop.show()
+    # The row with 'invalid_age' is dropped.
+
+    # 3. FAILFAST Mode
+    print("\n--- FAILFAST Mode ---")
+    try:
+        df_failfast = spark.read \
+                            .option("header", "true") \
+                            .schema(schema) \
+                            .option("mode", "FAILFAST") \
+                            .csv("/tmp/corrupt_data.csv")
+        df_failfast.show()
+    except Exception as e:
+        print(f"Caught expected error in FAILFAST mode: {e.args[0].splitlines()[0]}...")
+    # This will throw an analysis exception and fail the job immediately.
+    ```
+
+*   Choosing the Right Mode:
+    *   `PERMISSIVE`: Ideal for initial data exploration, logging corrupt records for later inspection, or when you can tolerate some data loss if it's not critical.
+    *   `DROPMALFORMED`: Useful when data quality is a concern but you prefer to discard bad records rather than stopping the entire pipeline. Ensure you understand the implications of data loss.
+    *   `FAILFAST`: Best for development environments to quickly identify data parsing issues or in production for critical pipelines where any data anomaly must trigger an alert and manual intervention.
+
+Q6: Explain the different write modes (`append`, `overwrite`, `ignore`, `errorifexists`) available when writing PySpark DataFrames to file systems or external tables. Discuss a scenario where `overwrite` with `saveAsTable` might be problematic and how `insertInto` could be a safer alternative for certain use cases.
+Solution: PySpark offers various write modes to control how data is handled when writing to a destination, ensuring data integrity and managing existing data.
+
+*   PySpark Write Modes:
+    1.  `append`: (Default for `saveAsTable` and `insertInto` if not specified) If data already exists at the target path, the new DataFrame's records are added to the existing data. This is useful for incremental loads.
+        ```python
+        df.write.mode("append").parquet("/path/to/data")
+        ```
+    2.  `overwrite`: If data already exists, it completely replaces the existing data at the target path with the new DataFrame's data. This is often used for full refreshes or snapshotting.
+        ```python
+        df.write.mode("overwrite").parquet("/path/to/data")
+        ```
+    3.  `ignore`: If data already exists at the target path, the write operation does nothing. The new DataFrame is not written, and the existing data remains untouched. This can be useful for idempotent operations.
+        ```python
+        df.write.mode("ignore").parquet("/path/to/data")
+        ```
+    4.  `errorifexists` (or `error`): (Default for `save` if not specified) If data already exists at the target path, an exception is thrown, and the write operation fails. This is useful for preventing accidental overwrites.
+        ```python
+        df.write.mode("errorifexists").parquet("/path/to/data")
+        ```
+
+*   `overwrite` with `saveAsTable` Problematic Scenario:
+    When writing to managed tables (especially in Databricks or Hive Metastore), using `df.write.mode("overwrite").saveAsTable("my_table")` is generally atomic for the *entire table*. However, if the table is partitioned, a simple `overwrite` operation might drop and recreate the entire table, losing metadata like statistics or potentially breaking other processes that rely on the table's structure during the brief period it's being recreated.
+
+    A more significant problem arises if you only want to update a *subset* of partitions (e.g., `overwrite` only the data for a specific date). A full `overwrite` will delete *all* existing partitions before writing the new data, which is often not the desired behavior if you only have new data for a specific partition.
+
+*   `insertInto` as a Safer Alternative (for partitioned tables):
+    For partitioned tables, `insertInto` offers more granular control and can be safer, especially when combined with `overwritePartitions()` or `replaceWhere()` (for Delta Lake). When using `insertInto` with a DataFrame that contains data for specific partitions, Spark can intelligently insert or overwrite *only* those partitions, leaving others untouched. This is often more efficient and less disruptive.
+
+    ```python
+    # Create a partitioned table first (e.g., in Databricks or Hive)
+    # spark.sql("CREATE TABLE my_partitioned_table (id INT, value STRING) USING PARQUET PARTITIONED BY (dt STRING)")
+
+    # Data for a specific date
+    data_today = [("A", "value1", "2023-10-26"), ("B", "value2", "2023-10-26")]
+    df_today = spark.createDataFrame(data_today, ["id", "value", "dt"])
+
+    # Using overwrite for a full table replacement
+    # df_today.write.mode("overwrite").saveAsTable("my_partitioned_table") # DANGER! Overwrites ALL partitions.
+
+    # Using insertInto with overwrite for specific partitions (requires Spark 2.3+ for dynamic partition overwrite)
+    # Set dynamic partition mode to true for this to work as expected
+    spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+    df_today.write.mode("overwrite").insertInto("my_partitioned_table")
+    # This will only overwrite partitions present in df_today (i.e., dt='2023-10-26'), leaving others intact.
+
+    # For Delta Lake, replaceWhere is even more explicit and robust:
+    # df_today.write.format("delta").mode("overwrite").option("replaceWhere", "dt = '2023-10-26'").saveAsTable("my_delta_table")
+    ```
+    `insertInto` provides better atomicity for partition-level operations, reducing the risk of data loss or inconsistency compared to a full table `overwrite` when only a subset of data needs updating.
+
+Q7: How do you read and write data in Avro format using PySpark? Are there any specific configurations or libraries required, especially when comparing a standard Apache Spark cluster with Databricks Runtime?
+Solution: Avro is a row-oriented data serialization framework, particularly popular in the Hadoop ecosystem. PySpark supports Avro, but the setup can differ slightly between standard Spark and Databricks Runtime.
+
+*   Reading and Writing Avro in PySpark:
+    The syntax for reading and writing Avro is similar to other formats, using `.format("avro")`.
+
+    ```python
+    # Example DataFrame
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder.appName("AvroDemo").getOrCreate()
+    data = [("apple", 10), ("banana", 20), ("orange", 15)]
+    columns = ["fruit", "count"]
+    df = spark.createDataFrame(data, columns)
+
+    # Write DataFrame to Avro format
+    output_avro_path = "/tmp/fruits.avro"
+    df.write.format("avro").mode("overwrite").save(output_avro_path)
+    print(f"DataFrame written to {output_avro_path} in Avro format.")
+
+    # Read data from Avro format back into a DataFrame
+    df_read_avro = spark.read.format("avro").load(output_avro_path)
+    df_read_avro.printSchema()
+    df_read_avro.show()
+    ```
+
+*   Specific Configurations/Libraries Required:
+    1.  Standard Apache Spark Cluster:
+        *   Requirement: The `spark-avro` package (or `spark-avro_2.12` for Scala 2.12 versions) is *not* included by default in a standard Spark distribution. You need to explicitly provide it.
+        *   How to provide:
+            *   `spark-submit`: Use the `--packages` option: `spark-submit --packages org.apache.spark:spark-avro_2.12:3.x.x your_app.py` (replace `3.x.x` with your Spark version).
+            *   `pyspark` shell: Start with `pyspark --packages org.apache.spark:spark-avro_2.12:3.x.x`.
+            *   Programmatic (less common for PySpark, more for Scala/Java): Add the dependency to your build tool (e.g., Maven, SBT).
+        *   Example `--packages` usage:
+            ```bash
+            spark-submit \
+              --packages org.apache.spark:spark-avro_2.12:3.4.1 \
+              your_pyspark_script.py
+            ```
+            (Note: The Scala version in `spark-avro_2.12` must match your Spark's Scala version, and the Spark version in `3.4.1` must match your Spark installation.)
+
+    2.  Databricks Runtime:
+        *   Requirement: Databricks Runtime typically includes the `spark-avro` library out-of-the-box. This means you usually don't need to specify any additional packages or configurations to read/write Avro files.
+        *   Usage: You can directly use `spark.read.format("avro")` and `df.write.format("avro")` without any extra setup on a Databricks cluster.
+
+*   Advantages of Avro:
+    *   Rich Schema Support: Avro schemas are JSON-based and support complex data types, including nested records, arrays, and maps.
+    *   Schema Evolution: Avro is designed for robust schema evolution, allowing producers and consumers to use different (but compatible) schemas without breaking data compatibility.
+    *   Compact Binary Format: Avro data is stored in a compact binary format, which is efficient for storage and network transfer.
+    *   Language Agnostic: Avro provides bindings for many programming languages, making it suitable for interoperability across different systems.
+
+

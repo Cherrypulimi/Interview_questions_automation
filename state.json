@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Reading & Writing Data in PySpark (CSV, JSON, Parquet, Avro, JDBC)",
     "Spark SQL & User Defined Functions (UDFs, pandas UDFs)",
     "Spark Optimization Techniques (Partitioning, Bucketing, Broadcast Joins)",
     "Spark Memory Management & Internals (Caching, Catalyst Optimizer)",
@@ -25,7 +24,8 @@
     "Introduction to Apache Spark & PySpark (Architecture, RDD vs DataFrame)",
     "PySpark RDD Programming Basics (Transformations vs Actions, Lazy Evaluation)",
     "PySpark DataFrame Basics (Schemas, Select, Filter, WithColumn)",
-    "PySpark Data Manipulation (Joins, Aggregations, GroupBy, Window Functions)"
+    "PySpark Data Manipulation (Joins, Aggregations, GroupBy, Window Functions)",
+    "Reading & Writing Data in PySpark (CSV, JSON, Parquet, Avro, JDBC)"
   ],
   "recent_questions": [
     "What is Apache Spark, and why is it popular for big data processing?",
@@ -55,6 +55,13 @@
     "When performing joins in PySpark, what are some common performance considerations and strategies for optimizing large-scale joins, especially regarding data skew? Discuss broadcast joins.",
     "Differentiate between `groupBy().agg()` and `rollup()` or `cube()` operations in PySpark. When would you choose `rollup()` or `cube()` over a standard `groupBy()`?",
     "Explain the difference between `row_number()`, `rank()`, and `dense_rank()` window functions in PySpark. Provide a scenario where each would be most appropriate.",
-    "You have two large PySpark DataFrames, `transactions` (customer_id, transaction_amount, transaction_date) and `customers` (customer_id, region, registration_date). Design a PySpark job to find the top 5 customers by total transaction amount in each `region` for transactions made in the last year. Explain the steps and the PySpark functions you would use."
+    "You have two large PySpark DataFrames, `transactions` (customer_id, transaction_amount, transaction_date) and `customers` (customer_id, region, registration_date). Design a PySpark job to find the top 5 customers by total transaction amount in each `region` for transactions made in the last year. Explain the steps and the PySpark functions you would use.",
+    "When reading a CSV file into a PySpark DataFrame, describe how to handle headers, schema inference, and custom delimiters. Discuss the trade-offs between inferring a schema and providing an explicit one.",
+    "You have a PySpark DataFrame and need to persist it to a data lake in Parquet format. Explain how to write the DataFrame, specifying the write mode and partitioning the output by a specific column. Why is Parquet generally preferred over CSV or JSON for analytical workloads in Spark?",
+    "You've received a large JSON file where each record spans multiple lines. How would you read this file into a PySpark DataFrame? Additionally, explain how to define an explicit schema for the JSON data to ensure data quality and avoid the overhead of schema inference.",
+    "Describe how to connect PySpark to an external relational database (e.g., PostgreSQL, MySQL) using JDBC to read data into a DataFrame. Provide a practical example, including how to specify connection properties and address common considerations like driver availability.",
+    "When reading data from semi-structured formats like CSV or JSON, malformed records or data that doesn't conform to the expected schema can cause job failures. Explain how PySpark's `mode` options can handle such scenarios and provide examples of how to use them.",
+    "Explain the different write modes (`append`, `overwrite`, `ignore`, `errorifexists`) available when writing PySpark DataFrames to file systems or external tables. Discuss a scenario where `overwrite` with `saveAsTable` might be problematic and how `insertInto` could be a safer alternative for certain use cases.",
+    "How do you read and write data in Avro format using PySpark? Are there any specific configurations or libraries required, especially when comparing a standard Apache Spark cluster with Databricks Runtime?"
   ]
 }
