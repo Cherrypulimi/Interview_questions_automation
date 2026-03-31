@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Introduction to Databricks (Workspace, Clusters, DBFS)",
     "Delta Lake Fundamentals (ACID Transactions, Time Travel, Optimize)",
     "Delta Lake Advanced (Merge Into, Schema Evolution, CDF)",
     "Databricks Unity Catalog (Data Governance, External Locations)",
@@ -25,16 +24,10 @@
     "Reading & Writing Data in PySpark (CSV, JSON, Parquet, Avro, JDBC)",
     "Spark SQL & User Defined Functions (UDFs, pandas UDFs)",
     "Spark Optimization Techniques (Partitioning, Bucketing, Broadcast Joins)",
-    "Spark Memory Management & Internals (Caching, Catalyst Optimizer)"
+    "Spark Memory Management & Internals (Caching, Catalyst Optimizer)",
+    "Introduction to Databricks (Workspace, Clusters, DBFS)"
   ],
   "recent_questions": [
-    "Differentiate between Spark transformations and actions, giving examples of each.",
-    "When you apply a series of transformations on an RDD in PySpark, what is the immediate outcome before any action is called? Illustrate with a simple `map` example.",
-    "Describe the key characteristics and implications of an RDD action. How does calling an action like `collect()` or `count()` differ fundamentally from a transformation in terms of execution flow?",
-    "Consider a scenario where you have a very large dataset and apply multiple filtering and mapping operations on an RDD. Explain how Spark's lazy evaluation strategy optimizes resource usage and execution time in this context. Provide a code snippet demonstrating a chain of lazy operations.",
-    "How does Spark's RDD lineage graph contribute to its fault tolerance and lazy evaluation model? Describe what the lineage graph represents and its role in recomputing lost partitions.",
-    "Explain the concept of immutability in the context of Spark RDDs. Why is immutability a crucial design principle for RDDs, especially in a distributed computing environment?",
-    "Differentiate between narrow and wide transformations in PySpark RDDs, providing an example for each. How does this distinction impact Spark's execution plan and fault tolerance?",
     "While DataFrames are generally preferred, describe a specific use case or scenario where directly working with RDDs in PySpark might still be advantageous or necessary, especially when dealing with highly unstructured data or custom serialization. How do RDD transformations and actions facilitate such a use case?",
     "Explain the importance of defining explicit schemas when creating or reading PySpark DataFrames. Provide an example of how to define a schema programmatically using `StructType` and `StructField`, and discuss its advantages over schema inference.",
     "Demonstrate various ways to select specific columns from a PySpark DataFrame. How would you rename a column during selection, and what are the implications of using `select` for performance?",
@@ -77,6 +70,13 @@
     "Describe how Spark manages memory during shuffle operations. What are the key configuration parameters that influence shuffle memory, and how can misconfiguration lead to `OutOfMemoryError` or performance degradation? Provide an example of a parameter you might tune.",
     "While DataFrames are generally preferred, there are still scenarios where caching RDDs might be considered. Differentiate between caching an RDD and caching a DataFrame in PySpark. Discuss the underlying mechanisms and when you might choose one over the other, considering serialization and Tungsten optimizations.",
     "Explain the purpose of Broadcast Variables and Accumulators in Spark, focusing on how they interact with Spark's memory model. How do Broadcast Variables help optimize memory usage and network I/O, especially in join operations or when distributing lookup tables?",
-    "When reading large datasets (e.g., Parquet, JSON) into PySpark, how can you strategically define the schema and select specific columns to optimize memory consumption and improve job performance, even before the Catalyst Optimizer fully kicks in? Provide a PySpark example demonstrating selective column reading and schema specification."
+    "When reading large datasets (e.g., Parquet, JSON) into PySpark, how can you strategically define the schema and select specific columns to optimize memory consumption and improve job performance, even before the Catalyst Optimizer fully kicks in? Provide a PySpark example demonstrating selective column reading and schema specification.",
+    "Explain the core components and purpose of a Databricks Workspace. How does it serve as a unified platform for data engineering, data science, and machine learning?",
+    "Differentiate between \"All-Purpose Clusters\" and \"Job Clusters\" in Databricks. When would you typically use each type, and how does Databricks manage their lifecycle and cost implications?",
+    "What is the Databricks File System (DBFS)? Describe its architecture and how it integrates with underlying cloud object storage. Discuss its key advantages and typical use cases within a Databricks environment.",
+    "You need to access data stored in an external AWS S3 bucket directly from your Databricks notebooks without constantly providing credentials. Explain how to securely mount this S3 bucket to DBFS. Provide a PySpark code snippet demonstrating how to read a Parquet file from this mounted location.",
+    "Databricks Runtime (DBR) is a key differentiator. Explain what Databricks Runtime is and how it enhances standard Apache Spark. Provide at least three specific examples of features or optimizations DBR offers out-of-the-box.",
+    "Describe the process of running a scheduled data processing job in Databricks. How do you create a \"Job\" in Databricks, and what are the benefits of using a Job over running a notebook interactively on an All-Purpose Cluster for production workloads?",
+    "You have a PySpark DataFrame `df` containing processed data. Explain how you would write this DataFrame to a specific folder within a mounted ADLS Gen2 location on Databricks in Parquet format, ensuring the write operation is idempotent (i.e., overwrites existing data in that specific folder but doesn't affect other folders)."
   ]
 }
