@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Delta Lake Fundamentals (ACID Transactions, Time Travel, Optimize)",
     "Delta Lake Advanced (Merge Into, Schema Evolution, CDF)",
     "Databricks Unity Catalog (Data Governance, External Locations)",
     "Databricks Workflows & Jobs (Task Dependencies, Job Clusters)",
@@ -25,16 +24,10 @@
     "Spark SQL & User Defined Functions (UDFs, pandas UDFs)",
     "Spark Optimization Techniques (Partitioning, Bucketing, Broadcast Joins)",
     "Spark Memory Management & Internals (Caching, Catalyst Optimizer)",
-    "Introduction to Databricks (Workspace, Clusters, DBFS)"
+    "Introduction to Databricks (Workspace, Clusters, DBFS)",
+    "Delta Lake Fundamentals (ACID Transactions, Time Travel, Optimize)"
   ],
   "recent_questions": [
-    "While DataFrames are generally preferred, describe a specific use case or scenario where directly working with RDDs in PySpark might still be advantageous or necessary, especially when dealing with highly unstructured data or custom serialization. How do RDD transformations and actions facilitate such a use case?",
-    "Explain the importance of defining explicit schemas when creating or reading PySpark DataFrames. Provide an example of how to define a schema programmatically using `StructType` and `StructField`, and discuss its advantages over schema inference.",
-    "Demonstrate various ways to select specific columns from a PySpark DataFrame. How would you rename a column during selection, and what are the implications of using `select` for performance?",
-    "Describe how to filter rows in a PySpark DataFrame based on single and multiple conditions. Illustrate the use of `filter()` or `where()` with examples, including logical operators.",
-    "Explain the purpose and common use cases of the `withColumn()` transformation in PySpark. Provide examples for adding a new column, modifying an existing one, and casting data types.",
-    "Discuss the mapping between native Python types and PySpark SQL data types. Why is it crucial to understand and correctly specify data types when working with DataFrames, especially for performance and data integrity?",
-    "Explain the concept of immutability as it applies to PySpark DataFrames. When you apply a transformation like `withColumn()`, what actually happens to the original DataFrame, and how does this design principle contribute to Spark's reliability?",
     "How does Spark's Catalyst Optimizer benefit DataFrame operations like `select` and `filter`? Provide a conceptual overview and an example of an optimization it might perform.",
     "Explain the different types of joins available in PySpark DataFrames and provide a practical example demonstrating an `inner` and a `left_outer` join.",
     "How do you perform aggregations on a PySpark DataFrame, both globally and per group? Illustrate with examples using `agg` and `groupBy` to calculate total sales and average quantity per product category.",
@@ -77,6 +70,13 @@
     "You need to access data stored in an external AWS S3 bucket directly from your Databricks notebooks without constantly providing credentials. Explain how to securely mount this S3 bucket to DBFS. Provide a PySpark code snippet demonstrating how to read a Parquet file from this mounted location.",
     "Databricks Runtime (DBR) is a key differentiator. Explain what Databricks Runtime is and how it enhances standard Apache Spark. Provide at least three specific examples of features or optimizations DBR offers out-of-the-box.",
     "Describe the process of running a scheduled data processing job in Databricks. How do you create a \"Job\" in Databricks, and what are the benefits of using a Job over running a notebook interactively on an All-Purpose Cluster for production workloads?",
-    "You have a PySpark DataFrame `df` containing processed data. Explain how you would write this DataFrame to a specific folder within a mounted ADLS Gen2 location on Databricks in Parquet format, ensuring the write operation is idempotent (i.e., overwrites existing data in that specific folder but doesn't affect other folders)."
+    "You have a PySpark DataFrame `df` containing processed data. Explain how you would write this DataFrame to a specific folder within a mounted ADLS Gen2 location on Databricks in Parquet format, ensuring the write operation is idempotent (i.e., overwrites existing data in that specific folder but doesn't affect other folders).",
+    "Explain how Delta Lake guarantees ACID properties for data reliability. Focus on the role of its transaction log and how it enables atomicity and isolation.",
+    "How does Delta Lake handle schema changes, and what are the different modes available for schema evolution? Provide a PySpark example demonstrating how to append data with schema evolution.",
+    "Describe Delta Lake's Time Travel feature. How does it work internally, and what are its practical use cases for data engineers?",
+    "Explain the purpose of `OPTIMIZE` and `ZORDER BY` in Delta Lake. How do they improve query performance, and when would you apply them?",
+    "What is the `VACUUM` command in Delta Lake, and why is it important? Discuss its safety implications and the `retention` period.",
+    "How can Delta Lake simplify complex data upsert (MERGE) operations, and how does this feature facilitate implementing Slowly Changing Dimensions (SCD Type 2)?",
+    "Beyond explicit `OPTIMIZE`, how does Delta Lake's file organization and statistics (data skipping) contribute to query performance? Discuss how it implicitly handles small files during writes, and when might explicit `OPTIMIZE` still be necessary?"
   ]
 }
