@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Databricks Workflows & Jobs (Task Dependencies, Job Clusters)",
     "Databricks SQL (Serverless SQL, Dashboards, Queries)",
     "Structured Streaming in PySpark (Watermarking, Checkpoints)",
     "Databricks Autoloader & Delta Live Tables (DLT)",
@@ -25,16 +24,10 @@
     "Introduction to Databricks (Workspace, Clusters, DBFS)",
     "Delta Lake Fundamentals (ACID Transactions, Time Travel, Optimize)",
     "Delta Lake Advanced (Merge Into, Schema Evolution, CDF)",
-    "Databricks Unity Catalog (Data Governance, External Locations)"
+    "Databricks Unity Catalog (Data Governance, External Locations)",
+    "Databricks Workflows & Jobs (Task Dependencies, Job Clusters)"
   ],
   "recent_questions": [
-    "How do you read and write data in Avro format using PySpark? Are there any specific configurations or libraries required, especially when comparing a standard Apache Spark cluster with Databricks Runtime?",
-    "Explain the core purpose of a standard PySpark UDF. Discuss its primary limitations, particularly concerning serialization and performance, and demonstrate how to create, register, and use one to calculate a simple derived value.",
-    "Describe the significant performance advantages of pandas UDFs (vectorized UDFs) over traditional row-at-a-time PySpark UDFs. Provide a practical example of a \"Scalar\" pandas UDF to apply a numerical transformation on a column.",
-    "Explain a suitable scenario for using a \"Grouped Map\" pandas UDF. Illustrate with a code example how to implement a Grouped Map UDF to perform a group-wise calculation (e.g., min-max scaling per group).",
-    "Differentiate between `createOrReplaceTempView` and `createOrReplaceGlobalTempView` in Spark SQL. Explain their respective scopes and typical use cases, demonstrating how to query data using both types of views.",
-    "Discuss common performance bottlenecks associated with using both standard and pandas UDFs in PySpark. What are the key strategies to optimize UDF performance, and in which situations might you consider avoiding UDFs altogether in favor of built-in Spark functions or Spark SQL expressions?",
-    "You need to use a complex Python library (e.g., `numpy` for advanced mathematical operations) within a PySpark UDF. Explain how you would ensure this library is available to your UDFs when running on a Databricks cluster. Provide a conceptual example of using such a library within a UDF.",
     "You have a CSV file containing raw sensor data. Describe how you would use Spark SQL to read this CSV, perform a simple data cleaning transformation (e.g., casting a column, filtering), and then write the transformed data into a Delta Lake table, ensuring schema evolution is handled.",
     "Explain how `repartition()` and `coalesce()` impact the number of partitions and data distribution in a PySpark DataFrame. When would you choose one over the other, and what are the performance implications of each?",
     "Describe the concept of bucketing in PySpark DataFrames and its primary benefits, especially for join performance. Illustrate how to create a bucketed table and explain a scenario where bucketing would significantly outperform a non-bucketed join.",
@@ -77,6 +70,13 @@
     "Differentiate between Unity Catalog's \"Managed Tables\" and \"External Tables.\" Discuss the lifecycle management of data and metadata for each type, and when you would opt for one over the other.",
     "Describe Unity Catalog's robust access control model. How do you grant and revoke fine-grained permissions (e.g., `SELECT`, `MODIFY`, `CREATE TABLE`) on catalogs, schemas, and tables to users and groups? Provide a SQL example for granting permissions.",
     "How does Unity Catalog provide a unified view and governance of data across different Databricks workspaces and even different cloud regions? What challenges does this solve for large enterprises?",
-    "Explain how Unity Catalog's `INFORMATION_SCHEMA` can be leveraged for data discovery, auditing, and understanding metadata. Provide a SQL query example to retrieve column details for a specific table."
+    "Explain how Unity Catalog's `INFORMATION_SCHEMA` can be leveraged for data discovery, auditing, and understanding metadata. Provide a SQL query example to retrieve column details for a specific table.",
+    "Databricks Workflows allow orchestration of complex data pipelines. Explain how you would define and manage intricate task dependencies, including conditional execution based on the success or failure of upstream tasks, within a Databricks Workflow. Provide a real-world scenario where conditional execution is critical.",
+    "When configuring a Databricks Job, how can you effectively customize its associated Job Cluster to optimize for both performance and cost for a specific workload? Discuss specific configurations you would consider, such as instance types, auto-scaling, and Spark configurations.",
+    "Robust error handling and retry mechanisms are vital for production data pipelines. Describe how to implement these within a Databricks Workflow to ensure resilience and minimize manual intervention for transient failures. How can you configure alerts for different job outcomes?",
+    "Databricks Workflows often need to interact with external systems or secure data sources. How can a Databricks Workflow integrate with external orchestration tools (e.g., Airflow, Azure Data Factory) or external data sources/sinks that require specific credentials or network configurations? Focus on secure credential management within the workflow context.",
+    "Explain the key benefits of using a *newly created Job Cluster per run* within a Databricks Workflow for production ETL jobs, as opposed to running tasks on a persistent All-Purpose cluster. Focus on isolation, cost optimization, and environment consistency.",
+    "How do Databricks Repos enhance the development, version control, and deployment of Databricks Workflows, particularly regarding CI/CD practices and collaborative development?",
+    "Consider a Databricks Workflow where one task performs an incremental `MERGE INTO` operation on a Delta Lake table. After this merge, it's critical to ensure data quality. Describe how you would implement a subsequent task within the workflow to validate data quality (e.g., check for duplicates, referential integrity) and automatically trigger alerts or halt the workflow if critical quality thresholds are not met."
   ]
 }
