@@ -4642,3 +4642,368 @@ def enriched_products():
 ```
 
 
+--- Date: 2026-04-04 19:47:45 ---
+Topic: Machine Learning with PySpark (MLlib, Feature Engineering)
+Description: Data Engineers and Spark Developers, ready to level up your Machine Learning game with PySpark? 🚀 This week, we're diving deep into MLlib and Feature Engineering, exploring how to build robust, scalable ML pipelines. Swipe through these 7 interview questions to test your knowledge on everything from distributed training to operationalizing models with Databricks Workflows. Master these concepts and ace your next interview! #interviewprep #dataengineering #pyspark #mllib #databricks #machinelearning
+
+Q1: Explain the concept of a PySpark ML Pipeline. How does it simplify the machine learning workflow, and what are its core components? Provide a simple code example demonstrating a pipeline for a classification task.
+Solution: PySpark ML Pipelines provide a high-level API for creating and tuning practical machine learning workflows. They chain together multiple `Transformer` and `Estimator` stages to form a single, cohesive workflow, making it easy to manage, reuse, and share ML logic. This sequential structure simplifies complex workflows by encapsulating steps like feature extraction, transformation, and model training into a unified process.
+
+*   Core Components:
+    *   `Transformer`: An algorithm that transforms one `DataFrame` into another. It has a `transform()` method. Examples include `Tokenizer`, `VectorAssembler`.
+    *   `Estimator`: An algorithm that can be "fitted" on a `DataFrame` to produce a `Transformer` (i.e., a trained model). It has a `fit()` method. Examples include `LogisticRegression`, `KMeans`.
+    *   `Pipeline`: Chains multiple `Transformer` and `Estimator` instances together to specify an ML workflow. It's an `Estimator` itself, meaning it can be `fit()` on data to produce a `PipelineModel`.
+    *   `PipelineModel`: Represents a fitted `Pipeline`. It's a `Transformer`, meaning it can `transform()` new data.
+*   Benefits:
+    *   Modularity: Each step is a distinct component.
+    *   Reusability: Components can be reused across different pipelines.
+    *   Reproducibility: Ensures consistent application of transformations and models.
+    *   Scalability: Leverages Spark's distributed processing for all stages.
+
+Example:
+```python
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.feature import HashingTF, Tokenizer
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("MLPipelineExample").getOrCreate()
+data = spark.createDataFrame([
+    (0, "a b c d e spark", 1.0),
+    (1, "b c d", 0.0),
+    (2, "spark f g h", 1.0),
+    (3, "hi spark", 0.0)
+], ["id", "text", "label"])
+
+tokenizer = Tokenizer(inputCol="text", outputCol="words")
+hashingTF = HashingTF(inputCol=tokenizer.getOutputCol(), outputCol="features", numFeatures=1000)
+lr = LogisticRegression(maxIter=10, regParam=0.001)
+
+pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
+model = pipeline.fit(data)
+
+test_data = spark.createDataFrame([
+    (4, "spark i j k"),
+    (5, "l m n"),
+    (6, "spark hadoop spark"),
+    (7, "apache spark")
+], ["id", "text"])
+
+prediction = model.transform(test_data)
+prediction.select("id", "text", "probability", "prediction").show()
+spark.stop()
+```
+
+Q2: Describe how PySpark MLlib's `StringIndexer`, `OneHotEncoderEstimator`, and `VectorAssembler` are used together for preparing categorical and numerical features for a machine learning model. Illustrate with a code snippet.
+Solution: *   `StringIndexer`: This transformer converts a column of string labels (or numerical labels representing categories) into a column of label indices. These indices are 0-based, and the order is typically determined by the frequency of the strings (most frequent gets index 0). It's crucial for converting categorical text data into a numerical format that ML algorithms can process.
+*   `OneHotEncoderEstimator`: This estimator maps a column of label indices (typically output from `StringIndexer`) to a column of binary vectors, with at most a single "1" entry per row that indicates the input category. This prevents the ML algorithm from inferring an ordinal relationship between categories where none exists (e.g., "red" is not "greater" than "blue").
+*   `VectorAssembler`: A transformer that combines a given list of numerical columns (either `Double`, `Int`, `Boolean`, or `Vector` types) into a single vector column. This single vector column, often named "features", is the standard input format for PySpark MLlib models. It allows you to consolidate all your engineered features into one input for the final model.
+*   Combined Workflow: First, `StringIndexer` converts categorical strings to numerical indices. Then, `OneHotEncoderEstimator` converts these indices into one-hot encoded sparse vectors. Finally, `VectorAssembler` consolidates these one-hot encoded vectors along with any other numerical features into a single feature vector for the model.
+
+Example:
+```python
+from pyspark.ml.feature import StringIndexer, OneHotEncoderEstimator, VectorAssembler
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("FeatureEngineering").getOrCreate()
+data = spark.createDataFrame([
+    (0, "red", 10),
+    (1, "blue", 20),
+    (2, "red", 30),
+    (3, "green", 40),
+    (4, "blue", 50)
+], ["id", "color", "value"])
+
+# 1. StringIndexer for 'color'
+indexer = StringIndexer(inputCol="color", outputCol="colorIndex")
+indexed_data = indexer.fit(data).transform(data)
+print("Indexed Data:")
+indexed_data.show()
+
+# 2. OneHotEncoderEstimator for 'colorIndex'
+encoder = OneHotEncoderEstimator(inputCols=["colorIndex"], outputCols=["colorVec"])
+encoded_data = encoder.fit(indexed_data).transform(indexed_data)
+print("Encoded Data:")
+encoded_data.show()
+
+# 3. VectorAssembler to combine 'colorVec' and 'value'
+assembler = VectorAssembler(inputCols=["colorVec", "value"], outputCol="features")
+final_features = assembler.transform(encoded_data)
+print("Final Features:")
+final_features.select("id", "color", "value", "features").show(truncate=False)
+spark.stop()
+```
+
+Q3: How do you perform hyperparameter tuning and model evaluation using cross-validation in PySpark MLlib? Discuss the roles of `ParamGridBuilder` and `CrossValidator`.
+Solution: *   Hyperparameter Tuning: This is the process of finding the optimal set of hyperparameters for a machine learning model to achieve the best performance. Hyperparameters are external configuration settings for an algorithm (e.g., `maxIter`, `regParam` for Logistic Regression) that are not learned from the data. `ParamGridBuilder` helps define the grid of hyperparameter values to search.
+*   Cross-Validation: A robust technique for evaluating the generalization ability of a predictive model and for hyperparameter tuning. Instead of a single train/test split, the dataset is divided into `k` (e.g., 3 or 5) folds. The model is trained `k` times, each time using `k-1` folds for training and the remaining fold for validation. The performance metrics are then averaged across all `k` runs. This provides a more reliable estimate of the model's performance on unseen data and helps prevent overfitting to a single validation set.
+*   `ParamGridBuilder`: Used to construct a grid of hyperparameter combinations to search over. You specify the parameter and a list of values to try for each parameter. For example, `ParamGridBuilder().addGrid(lr.regParam, [0.01, 0.1, 1.0]).addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0])`.
+*   `CrossValidator`: An `Estimator` that takes an `Estimator` (e.g., a `Pipeline` or `LogisticRegression` model), a `ParamGridBuilder`, and an `Evaluator` (e.g., `BinaryClassificationEvaluator`). It systematically tries every combination of hyperparameters defined in the `ParamGridBuilder` using cross-validation, trains the model with each combination, evaluates it, and then selects the model that performed best on average across the folds. The `fit()` method returns the best `PipelineModel` (or model).
+
+Example:
+```python
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.feature import HashingTF, Tokenizer
+from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("HyperparameterTuning").getOrCreate()
+data = spark.createDataFrame([
+    (0, "a b c d e spark", 1.0), (1, "b c d", 0.0), (2, "spark f g h", 1.0),
+    (3, "hi spark", 0.0), (4, "spark i j k", 1.0), (5, "l m n", 0.0),
+    (6, "spark hadoop spark", 1.0), (7, "apache spark", 0.0)
+], ["id", "text", "label"])
+
+tokenizer = Tokenizer(inputCol="text", outputCol="words")
+hashingTF = HashingTF(inputCol=tokenizer.getOutputCol(), outputCol="features")
+lr = LogisticRegression(maxIter=10)
+pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
+
+paramGrid = (ParamGridBuilder()
+             .addGrid(hashingTF.numFeatures, [10, 100, 1000])
+             .addGrid(lr.regParam, [0.1, 0.01])
+             .build())
+
+evaluator = BinaryClassificationEvaluator()
+crossval = CrossValidator(estimator=pipeline,
+                          estimatorParamMaps=paramGrid,
+                          evaluator=evaluator,
+                          numFolds=3) # Use 3+ folds in practice for better evaluation
+
+cvModel = crossval.fit(data) # This will train multiple models
+best_model = cvModel.bestModel
+print(f"Best model's average metric: {cvModel.avgMetrics[0]}")
+# To see regParam for the LogisticRegression in the best model:
+# print(best_model.stages[-1].getRegParam())
+spark.stop()
+```
+
+Q4: Explain how PySpark MLlib leverages Spark's distributed architecture to train machine learning models efficiently on large datasets. Focus on how data and computation are distributed during model training (e.g., for algorithms like Logistic Regression or K-Means).
+Solution: *   Spark's Architecture: PySpark MLlib is built on top of Apache Spark, which is inherently a distributed computing framework. Spark achieves parallelism by distributing data across a cluster of machines (nodes) and performing computations on these partitions in parallel. This allows MLlib algorithms to scale to very large datasets that wouldn't fit into the memory of a single machine.
+*   Data Distribution: When you load data into a Spark DataFrame, it's partitioned and distributed across the cluster's worker nodes. MLlib algorithms operate directly on these distributed DataFrames. For example, during model training, input features and labels are spread across the cluster.
+*   Parallel Computation (Data-Parallelism): Many MLlib algorithms, especially iterative ones like those for Logistic Regression or K-Means, employ data-parallel approaches. Each worker node can compute its part of the overall calculation (e.g., gradients for Logistic Regression, cluster assignments for K-Means) on its local partition of the data simultaneously. These local results are then aggregated by the Spark driver, and the model parameters are updated. This process repeats across iterations until convergence.
+*   Fault Tolerance: Spark's resilient distributed datasets (RDDs) and DataFrames provide fault tolerance. If a worker node fails during training, Spark can recompute the lost partitions on another available node, ensuring the training process continues without losing progress.
+*   Example (Conceptual for Logistic Regression Training):
+    1.  Data Loading: A large dataset `df` is loaded and automatically partitioned across `N` worker nodes in the Spark cluster. Each node holds a distinct subset of the data.
+    2.  Initial Model: The Spark driver initializes the model's weights and bias (parameters).
+    3.  Iterative Training: For each iteration of the optimization algorithm (e.g., Gradient Descent):
+        *   Worker Phase: Each worker node, in parallel, calculates the gradient of the loss function based on its local data partition using the current model weights. This is a local computation on the data residing on that worker.
+        *   Driver Phase: The driver collects these partial gradients from all workers, aggregates them (e.g., sums them up), and updates the global model weights. This typically involves a `reduce` or `aggregate` operation.
+    4.  Repeat: Steps 2 and 3 are repeated until convergence or a maximum number of iterations (`maxIter`) is reached.
+    5.  Prediction: For inference, the trained model (a `Transformer`) is broadcast to all workers. Each worker can then make predictions on its local data partitions in parallel, distributing the inference load.
+
+This distributed approach allows MLlib to efficiently train models on datasets far larger than what a single machine could handle, making it highly suitable for big data machine learning tasks.
+
+Q5: You've developed a PySpark ML model. Describe how you would operationalize its training, evaluation, and potentially model registration (e.g., to MLflow) using Databricks Workflows. How would you ensure the workflow runs reliably and can be scheduled?
+Solution: Operationalizing a PySpark ML model involves creating an automated, reliable pipeline for its lifecycle. Databricks Workflows are ideal for orchestrating this process.
+
+*   End-to-End Workflow Design:
+    *   Data Ingestion/Preparation (Task 1): A PySpark notebook task ingests raw data (e.g., from cloud storage via Autoloader, or from a database) and performs initial cleaning and feature engineering. It prepares the dataset for model training.
+    *   Model Training & Evaluation (Task 2): This PySpark notebook task loads the prepared data, builds the PySpark ML Pipeline (including feature transformers and the model), trains the model, and evaluates its performance using appropriate metrics. Crucially, within this task, the model, its parameters, and evaluation metrics are logged to MLflow. The best performing model version is then registered to the MLflow Model Registry, potentially tagged as "Staging" or "Production Candidate."
+    *   Model Validation & Promotion (Task 3 - Optional but recommended): A Python script or notebook task queries the MLflow Model Registry, fetches the newly registered model, runs additional validation tests (e.g., data drift checks, performance comparison against a baseline model), and if successful, programmatically transitions the model's stage to "Production" in MLflow.
+    *   Batch Inference/Deployment (Task 4): A final PySpark notebook task uses the "Production" model from the MLflow Model Registry to perform batch inference on new data, writing predictions back to a Delta Lake table or other designated sink.
+*   Ensuring Reliability and Scheduling with Databricks Workflows:
+    *   Task Dependencies: Define clear dependencies between tasks (e.g., "Model Training" depends on "Data Preparation"). Databricks Workflows automatically manage the execution order and retry mechanisms for transient failures.
+    *   Job Clusters: Configure each task to run on a dedicated Job Cluster. This ensures isolation, optimizes resource allocation for specific task types (e.g., a compute-optimized cluster for training, an I/O-optimized cluster for ingestion), and avoids resource contention with interactive workloads. Auto-scaling should be configured for cost efficiency.
+    *   Scheduling: Workflows can be scheduled to run at specific intervals (e.g., daily, hourly) using a cron expression or triggered by external events (e.g., file arrival in cloud storage, Kafka message).
+    *   Error Handling & Alerts: Configure robust error handling for tasks (e.g., automatic retries on failure). Set up notifications (email, webhooks) for job success, failure, or specific conditions to alert data engineers or MLOps teams.
+    *   Version Control: Store all notebook and script code in Databricks Repos, integrating with Git for version control, collaborative development, and CI/CD practices for workflow updates.
+
+Example Workflow Structure (Conceptual JSON):
+```json
+{
+  "name": "ML_Training_and_Deployment_Workflow",
+  "tasks": [
+    {
+      "task_key": "data_preparation",
+      "notebook_task": {
+        "notebook_path": "/Users/{{user}}/ml_project/01_data_preparation",
+        "source": "WORKSPACE"
+      },
+      "new_cluster": {
+        "spark_version": "12.2.x-cpu-ml-scala2.12",
+        "node_type_id": "Standard_DS3_v2",
+        "num_workers": 2
+      },
+      "timeout_seconds": 3600
+    },
+    {
+      "task_key": "model_training",
+      "notebook_task": {
+        "notebook_path": "/Users/{{user}}/ml_project/02_model_training",
+        "source": "WORKSPACE"
+      },
+      "new_cluster": {
+        "spark_version": "12.2.x-cpu-ml-scala2.12",
+        "node_type_id": "Standard_DS5_v2",
+        "num_workers": 4
+      },
+      "depends_on": [{"task_key": "data_preparation"}],
+      "timeout_seconds": 7200
+    },
+    {
+      "task_key": "model_validation_and_registration",
+      "notebook_task": {
+        "notebook_path": "/Users/{{user}}/ml_project/03_model_validation_and_registration",
+        "source": "WORKSPACE"
+      },
+      "new_cluster": {
+        "spark_version": "12.2.x-cpu-ml-scala2.12",
+        "node_type_id": "Standard_DS3_v2",
+        "num_workers": 1
+      },
+      "depends_on": [{"task_key": "model_training"}],
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "batch_inference",
+      "notebook_task": {
+        "notebook_path": "/Users/{{user}}/ml_project/04_batch_inference",
+        "source": "WORKSPACE"
+      },
+      "new_cluster": {
+        "spark_version": "12.2.x-cpu-ml-scala2.12",
+        "node_type_id": "Standard_DS4_v2",
+        "num_workers": 2
+      },
+      "depends_on": [{"task_key": "model_validation_and_registration"}],
+      "timeout_seconds": 3600
+    }
+  ],
+  "schedule": {
+    "quartz_cron_expression": "0 0 2 * * ?",
+    "timezone_id": "America/Los_Angeles",
+    "pause_status": "UNPAUSED"
+  },
+  "email_notifications": {
+    "on_start": [],
+    "on_success": ["alerts@example.com"],
+    "on_failure": ["alerts@example.com"]
+  }
+}
+```
+
+Q6: When would you need to create a custom transformer in PySpark MLlib? Provide a high-level overview of the steps involved in implementing a custom `Transformer` or `Estimator` to encapsulate a specific feature engineering logic not directly available in MLlib.
+Solution: *   When to Create Custom Transformers:
+    *   Non-Standard Feature Engineering: When you have specific, domain-driven feature engineering logic that isn't covered by existing PySpark MLlib transformers. Examples include calculating a complex ratio from multiple columns, interacting with an external API for feature enrichment, applying a custom aggregation logic, or performing specialized text processing not covered by standard tokenizers.
+    *   Encapsulation and Reusability: To encapsulate complex data preparation steps or custom algorithms into a reusable, pipeline-compatible component, maintaining the `Transformer`/`Estimator` API structure. This promotes clean code and makes your custom logic easy to integrate into larger ML pipelines.
+    *   Integration with ML Pipelines: To seamlessly integrate your custom logic into a PySpark ML Pipeline, benefiting from its structured approach, `fit`/`transform` semantics, and distributed execution capabilities.
+*   Steps to Implement a Custom `Transformer`:
+    1.  Inherit from `Transformer` and `DefaultParamsReadable`/`Writable`: Your class should inherit from `pyspark.ml.Transformer` and mix in `pyspark.ml.util.DefaultParamsReadable` and `pyspark.ml.util.DefaultParamsWritable` to support saving and loading the transformer.
+    2.  Define Parameters: Use `pyspark.ml.param.Param` to define any configurable parameters for your transformer (e.g., input/output column names, thresholds, lookup tables). Parameters should be defined as members of your class using `self.myParam = Param(...)`.
+    3.  Implement `__init__`: Initialize your class, calling `super().__init__()` and setting default values for your parameters using `self._setDefault(inputCol="input", outputCol="output")`.
+    4.  Implement `_transform(self, dataset: DataFrame) -> DataFrame`: This is the core method where your custom logic resides. It takes a Spark `DataFrame` as input and returns a transformed `DataFrame`. You'll use Spark DataFrame API operations within this method to apply your custom feature engineering.
+*   Steps to Implement a Custom `Estimator` (for models or complex feature steps requiring `fit`):
+    *   If your custom logic requires learning from the data (e.g., calculating global statistics like min/max for scaling, or fitting a custom model), you would implement an `Estimator`. It follows similar steps but instead of `_transform`, you implement `_fit(self, dataset: DataFrame) -> Model`, which returns a `Model` (which is itself a `Transformer`) after learning from the data.
+    *   You would also need to define a corresponding `Model` class (e.g., `MyCustomEstimatorModel`) that inherits from `Transformer` and implements `_transform()` to apply the learned logic.
+
+Example (Custom Transformer for simple Min-Max Scaling):
+```python
+from pyspark.ml import Transformer
+from pyspark.ml.param.shared import HasInputCol, HasOutputCol
+from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
+from pyspark.sql import DataFrame
+from pyspark.sql.functions import col, min, max
+from pyspark.sql import SparkSession
+
+class MinMaxScalar(Transformer, HasInputCol, HasOutputCol, DefaultParamsReadable, DefaultParamsWritable):
+    def __init__(self, inputCol=None, outputCol=None):
+        super().__init__()
+        self._setDefault(inputCol="input", outputCol="output")
+        self.setInputCol(inputCol)
+        self.setOutputCol(outputCol)
+
+    def _transform(self, dataset: DataFrame) -> DataFrame:
+        input_col = self.getInputCol()
+        output_col = self.getOutputCol()
+
+        # Calculate min and max from the dataset (requires an action, so it's 'fit'-like logic)
+        # For a true Transformer, you would typically pass these values as parameters
+        # or pre-calculate them if the Transformer is part of a PipelineModel.
+        # This example simplifies for demonstration.
+        stats = dataset.agg(min(col(input_col)).alias("min_val"),
+                            max(col(input_col)).alias("max_val")).first()
+        min_val = stats["min_val"]
+        max_val = stats["max_val"]
+
+        if max_val == min_val: # Avoid division by zero
+            return dataset.withColumn(output_col, col(input_col) * 0.0) # all zeros
+        else:
+            return dataset.withColumn(output_col, (col(input_col) - min_val) / (max_val - min_val))
+
+spark = SparkSession.builder.appName("CustomTransformerExample").getOrCreate()
+data = spark.createDataFrame([(1,), (2,), (3,), (4,), (5,)], ["value"])
+scaler = MinMaxScalar(inputCol="value", outputCol="scaled_value")
+scaled_data = scaler.transform(data)
+scaled_data.show()
+spark.stop()
+```
+
+Q7: After training a PySpark ML model, how would you persist it and what are the key considerations for deploying it for inference, especially in a Databricks environment? Briefly discuss how MLflow integrates with this process.
+Solution: *   Model Persistence:
+    *   Saving the Model: After training, a PySpark MLlib model (which is a `Transformer` or `PipelineModel`) can be saved using its `write().overwrite().save("path/to/model")` method. This serializes the model to a distributed file system (like DBFS, S3, ADLS) in a format that PySpark can reload. It saves the model's structure, parameters, and any internal state (e.g., feature statistics from a `VectorIndexer`).
+    *   Loading the Model: The saved model can be reloaded using `PipelineModel.load("path/to/model")` (or `LogisticRegressionModel.load()`, etc.). This rehydrates the model object, making it ready for inference.
+    *   MLflow Integration (Recommended): Databricks strongly recommends using MLflow for model persistence. MLflow provides:
+        *   Tracking: Automatically logs model parameters, metrics, and artifacts (including the PySpark model itself) during training runs.
+        *   Model Registry: A centralized hub to manage the lifecycle of MLflow Models. You can register models, track versions, transition stages (Staging, Production, Archived), and annotate models with descriptions. The registry acts as a single source of truth for all models.
+*   Deployment Considerations in Databricks:
+    *   Batch Inference: This is the most common approach for large-scale predictions.
+        *   Databricks Jobs: Schedule a Databricks Job (a notebook or JAR) that loads the registered "Production" model from MLflow Model Registry, loads new data, performs `model.transform(new_data)`, and writes the predictions to a Delta Lake table or other sink.
+        *   Optimized Clusters: Use a job cluster optimized for inference (e.g., with appropriate memory/CPU, potentially GPU if your model supports it, though less common for traditional PySpark MLlib models).
+    *   Real-time Inference: For low-latency predictions.
+        *   MLflow Model Serving: Databricks offers MLflow Model Serving, which deploys registered models as REST API endpoints directly from the Model Registry. You can query these endpoints for real-time predictions, often the simplest way to deploy for real-time in Databricks.
+        *   Custom Microservices: For more complex scenarios, you might export the model and deploy it within a custom microservice (e.g., Flask/FastAPI application) on a separate compute infrastructure (e.g., Kubernetes, Azure Container Instances, AWS ECS).
+        *   Structured Streaming: For near real-time, you could integrate model inference into a Structured Streaming pipeline. The stream would read data, apply the loaded PySpark ML model using `transform()`, and then write predictions to a sink.
+*   MLflow Integration for Deployment (Summary):
+    *   Model Registry as Source of Truth: Always retrieve the production-ready model from the MLflow Model Registry using its name and stage (e.g., `mlflow.spark.load_model("models:/TextClassifierPipeline/Production")`). This ensures you're deploying the correct, validated version.
+    *   Model Serving: MLflow Model Serving directly uses the models registered in the registry, streamlining the API deployment process.
+    *   Reproducibility: MLflow logs all dependencies and environment information, making deployments more reproducible and reducing environment-related issues.
+
+Example (Saving/Loading a PySpark ML Pipeline Model and using MLflow):
+```python
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.feature import HashingTF, Tokenizer
+from pyspark.sql import SparkSession
+import mlflow
+import mlflow.spark
+
+spark = SparkSession.builder.appName("ModelPersistence").getOrCreate()
+data = spark.createDataFrame([
+    (0, "a b c d e spark", 1.0), (1, "b c d", 0.0), (2, "spark f g h", 1.0),
+    (3, "hi spark", 0.0)
+], ["id", "text", "label"])
+
+tokenizer = Tokenizer(inputCol="text", outputCol="words")
+hashingTF = HashingTF(inputCol=tokenizer.getOutputCol(), outputCol="features", numFeatures=100)
+lr = LogisticRegression(maxIter=10, regParam=0.01)
+pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
+
+# --- Training and MLflow Logging ---
+with mlflow.start_run() as run:
+    model = pipeline.fit(data)
+    # Log the PySpark ML model to MLflow and register it in the Model Registry
+    mlflow.spark.log_model(model, "pyspark-ml-model",
+                            registered_model_name="TextClassifierPipeline")
+    print(f"Model logged to MLflow with run_id: {run.info.run_id}")
+
+# --- Loading for Inference from MLflow Model Registry (recommended) ---
+# In a production job, you would load the 'Production' stage model.
+# You might also transition the model to 'Production' stage programmatically after validation.
+loaded_model = mlflow.spark.load_model("models:/TextClassifierPipeline/Production")
+# Or using a specific version:
+# loaded_model = mlflow.spark.load_model(f"models:/TextClassifierPipeline/{model_version}")
+
+test_data = spark.createDataFrame([
+    (4, "spark i j k"),
+    (5, "l m n")
+], ["id", "text"])
+
+predictions = loaded_model.transform(test_data)
+predictions.select("id", "text", "prediction").show()
+spark.stop()
+```
+
+
