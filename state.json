@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)",
     "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
     "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
@@ -31,6 +30,16 @@
     "Linux Automation for DevOps (cron scripts, monitoring scripts)",
     "Real-world Linux Scenario Questions for DevOps Interviews"
   ],
-  "covered_topics": [],
-  "recent_questions": []
+  "covered_topics": [
+    "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)"
+  ],
+  "recent_questions": [
+    "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
+    "What is a shell in Linux, and what are its primary functions? Name a few common shells and their differences.",
+    "Differentiate between popular Linux distributions like Ubuntu, CentOS/RHEL, and Alpine Linux, highlighting their typical use cases in a DevOps environment.",
+    "Explain the concept of system calls and provide an example of how a user-space program might utilize one.",
+    "What is the primary difference between the Linux Kernel and the Shell?",
+    "Why is shell scripting crucial for DevOps engineers? Provide a simple example of a shell script to automate a common task.",
+    "Briefly describe the high-level stages of the Linux boot process, emphasizing the kernel's role."
+  ]
 }
