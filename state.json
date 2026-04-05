@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
     "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
     "File Permissions & Ownership (chmod, chown, chgrp, umask)",
@@ -31,7 +30,8 @@
     "Real-world Linux Scenario Questions for DevOps Interviews"
   ],
   "covered_topics": [
-    "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)"
+    "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)",
+    "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)"
   ],
   "recent_questions": [
     "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
@@ -40,6 +40,13 @@
     "Explain the concept of system calls and provide an example of how a user-space program might utilize one.",
     "What is the primary difference between the Linux Kernel and the Shell?",
     "Why is shell scripting crucial for DevOps engineers? Provide a simple example of a shell script to automate a common task.",
-    "Briefly describe the high-level stages of the Linux boot process, emphasizing the kernel's role."
+    "Briefly describe the high-level stages of the Linux boot process, emphasizing the kernel's role.",
+    "Explain the significance of the root directory (/) in Linux and describe its role as the top-level directory in the file system hierarchy.",
+    "What is the primary purpose of the `/etc` directory in Linux? Provide examples of common files or subdirectories found within it that are critical for system configuration.",
+    "Differentiate between `/var` and `/tmp` directories. When would a DevOps engineer typically interact with each, and what kind of data would they expect to find?",
+    "Describe the function of the `/home` directory and its importance for multi-user Linux systems. How does it relate to user permissions?",
+    "What is the `/proc` file system, and why is it unique compared to other directories? Provide examples of information a DevOps engineer might extract from `/proc`.",
+    "Discuss the purpose of the `/bin` and `/sbin` directories. Why are they separated, and what types of commands would you expect to find in each?",
+    "Explain the concept of 'mounting' in the context of the Linux file system hierarchy. Provide a practical scenario where a DevOps engineer would need to mount a file system."
   ]
 }
