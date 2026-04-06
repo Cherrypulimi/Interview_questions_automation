@@ -345,3 +345,196 @@ sudo umount /mnt/usb_drive
 ```
 
 
+--- Date: 2026-04-06 16:07:19 ---
+Topic: Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)
+Description: Ready to ace your next DevOps interview? 🚀 This week, we're diving deep into the essential Linux commands every engineer needs to master: `ls`, `cd`, `pwd`, `cp`, `mv`, `rm`, and `touch`. Swipe through these 7 critical questions to test your knowledge and solidify your understanding of file system navigation and manipulation. Level up your Linux skills today! #interviewprep #dataengineering #linux #devops #cloudengineering
+
+Q1: A DevOps engineer needs to inspect the contents of the `/var/log` directory to troubleshoot an application issue. Describe how you would use the `ls` command to:
+1. List all files and directories, including hidden ones.
+2. Display them in a long format, showing permissions, ownership, size, and modification time.
+3. Sort the output by modification time, with the newest files appearing first.
+4. Recursively list the contents of all subdirectories within `/var/log`.
+Solution: The `ls` command is incredibly versatile for listing directory contents. Here's how to achieve the specified requirements:
+
+*   List all files (including hidden) in long format, sorted by modification time (newest first):
+    ```bash
+    ls -lat /var/log
+    ```
+    *   `-l`: Use a long listing format.
+    *   `-a`: Do not ignore entries starting with `.` (hidden files and directories).
+    *   `-t`: Sort by modification time, newest first.
+
+*   Recursively list the contents of all subdirectories:
+    ```bash
+    ls -R /var/log
+    ```
+    *   `-R`: List subdirectories recursively.
+
+    To combine the long format with recursive listing, you might use:
+    ```bash
+    ls -lR /var/log
+    ```
+    Note that sorting by time (`-t`) typically applies only to the current directory when used with `-R` unless combined with other tools like `find` and `xargs`.
+
+Q2: You are currently in `/home/devops/projects/my_app`. Explain how you would use `cd` and `pwd` to achieve the following, detailing the commands and the expected `pwd` output after each step:
+1. Navigate to the `/etc/nginx` directory using an absolute path.
+2. Return to your previous working directory.
+3. Navigate to the `/home/devops/configs` directory (assuming `configs` is a sibling of `projects`).
+4. Navigate directly to your home directory from anywhere.
+Solution: The `cd` (change directory) and `pwd` (print working directory) commands are fundamental for navigation in the Linux file system.
+
+1.  Navigate to `/etc/nginx` using an absolute path:
+    ```bash
+    cd /etc/nginx
+    pwd
+    ```
+    *Expected `pwd` output:* `/etc/nginx`
+
+2.  Return to your previous working directory:
+    ```bash
+    cd -
+    pwd
+    ```
+    *Expected `pwd` output:* `/home/devops/projects/my_app`
+
+3.  Navigate to `/home/devops/configs` (sibling of `projects`):
+    (Assuming you are back in `/home/devops/projects/my_app` from the previous step)
+    ```bash
+    cd ../configs
+    pwd
+    ```
+    *Expected `pwd` output:* `/home/devops/configs`
+    *   `..` refers to the parent directory (`/home/devops`).
+
+4.  Navigate directly to your home directory from anywhere:
+    ```bash
+    cd ~
+    pwd
+    ```
+    *Expected `pwd` output:* `/home/devops`
+    *   `~` is a shortcut that expands to the current user's home directory.
+
+Q3: Before modifying a critical Nginx configuration file located at `/etc/nginx/nginx.conf`, a DevOps engineer needs to create a backup.
+1. How would you copy this file to `/tmp/nginx.conf.bak`?
+2. After making changes, you realize you need to revert to the backup. How would you copy the backup file back to its original location, ensuring you preserve the original file's permissions and ownership (if you had them initially)?
+3. What command would you use to copy an entire directory, say `/opt/app_data`, to `/var/backups/app_data_backup`?
+Solution: The `cp` command is essential for duplicating files and directories, offering various options for different scenarios.
+
+1.  Copy the Nginx configuration file to `/tmp` as a backup:
+    ```bash
+    cp /etc/nginx/nginx.conf /tmp/nginx.conf.bak
+    ```
+    This creates a direct copy of the file.
+
+2.  Revert to the backup, preserving permissions and ownership:
+    ```bash
+    cp -p /tmp/nginx.conf.bak /etc/nginx/nginx.conf
+    ```
+    *   `-p`: Preserves the original file's mode (permissions), ownership, and timestamps. This is crucial for configuration files to ensure they retain the correct system permissions after restoration.
+
+3.  Copy an entire directory recursively:
+    ```bash
+    cp -r /opt/app_data /var/backups/app_data_backup
+    ```
+    *   `-r` (or `--recursive`): This option is used to copy directories and their contents recursively. Without it, `cp` will typically refuse to copy directories.
+
+Q4: A new version of your web application's static assets is in `/tmp/new_assets`. The current production assets are in `/var/www/html/assets`. 
+1. How would you replace the old assets with the new ones, assuming you want to move the new assets into place and effectively delete the old ones (or overwrite if `mv` behaves that way)?
+2. After deployment, you realize a log file named `debug.log` was accidentally created in `/var/www/html`. How would you move it to `/var/log/nginx/` and rename it to `webapp_debug.log` in a single command?
+Solution: The `mv` command is used for moving or renaming files and directories, which can be very powerful for deployments and file organization.
+
+1.  Replace old assets with new ones:
+    ```bash
+    mv /tmp/new_assets /var/www/html/assets
+    ```
+    *   If `/var/www/html/assets` already exists and is a directory, `mv` will move `/tmp/new_assets` *into* it, resulting in `/var/www/html/assets/new_assets`. This is usually not the desired behavior for a full replacement.
+    *   To truly *replace* the old directory, you would typically `rm -rf /var/www/html/assets` first, then `mv /tmp/new_assets /var/www/html/assets`. However, `mv` *can* overwrite a directory if the source is a directory and the target is an existing empty directory. For non-empty directories, it will usually move the source *into* the target. A safer approach for replacement is often:
+        ```bash
+        rm -rf /var/www/html/assets  # Remove old assets
+        mv /tmp/new_assets /var/www/html/assets # Move new assets into place
+        ```
+        Or, if you want to rename the old for rollback:
+        ```bash
+        mv /var/www/html/assets /var/www/html/assets.old # Rename old assets
+        mv /tmp/new_assets /var/www/html/assets # Move new assets into place
+        ```
+
+2.  Move and rename a log file in a single command:
+    ```bash
+    mv /var/www/html/debug.log /var/log/nginx/webapp_debug.log
+    ```
+    *   When the destination path includes a new filename, `mv` performs both the move and the rename operation simultaneously. If the destination directory (`/var/log/nginx/` in this case) does not exist, the command will fail.
+
+Q5: You've been tasked with cleaning up temporary build artifacts from the `/tmp` directory.
+1. How would you safely remove a single file named `build_output.tar.gz` from `/tmp`?
+2. You then discover an entire directory, `/tmp/old_builds`, which contains many files and subdirectories. How would you remove this directory and all its contents without being prompted for confirmation for each file?
+3. What critical precaution should a DevOps engineer *always* take before executing `rm -rf` in a production environment?
+Solution: The `rm` command is used for removing files and directories. It's powerful and must be used with extreme caution, especially in production.
+
+1.  Safely remove a single file:
+    ```bash
+    rm /tmp/build_output.tar.gz
+    ```
+    *   This command will remove the specified file. It will typically prompt for confirmation if the file is write-protected (e.g., if you don't own it and it doesn't have write permissions for others).
+
+2.  Remove an entire directory and its contents recursively without prompts:
+    ```bash
+    rm -rf /tmp/old_builds
+    ```
+    *   `-r` (or `--recursive`): Used to remove directories and their contents recursively.
+    *   `-f` (or `--force`): Ignores non-existent files and arguments, and never prompts for confirmation. This makes the command very dangerous, as it will delete everything specified without asking.
+
+3.  Critical precaution before `rm -rf` in production:
+    *   Always, always, *always* verify the path you are about to delete. A common and catastrophic mistake is to execute `rm -rf /` or `rm -rf ./*` when accidentally in the wrong directory, or with a typo. Before running `rm -rf`, use `pwd` to confirm your current directory, or `ls -d <path>` to confirm the target path. Double-check the command carefully before pressing Enter. Consider using `rm -iR` for interactive recursive deletion if you need more control, or using `find` with `-delete` for more complex, targeted removals.
+
+Q6: A monitoring script expects a `heartbeat.txt` file to exist in `/var/run/app/` and to be updated every minute.
+1. How would you create this empty file if it doesn't exist?
+2. If the file already exists, how would you update its modification timestamp without changing its content?
+3. Imagine you want to create multiple empty files for different application logs, e.g., `app.log`, `access.log`, `error.log` in `/var/log/myapp/`. How would you create all three simultaneously using `touch`?
+Solution: The `touch` command is used to change file timestamps or create empty files.
+
+1.  Create an empty file if it doesn't exist:
+    ```bash
+    touch /var/run/app/heartbeat.txt
+    ```
+    *   If `/var/run/app/heartbeat.txt` does not exist, `touch` will create it as an empty file.
+    *   Note: The directory `/var/run/app/` must already exist for this to work. If not, `mkdir -p /var/run/app/` would be needed first.
+
+2.  Update a file's modification timestamp without changing its content:
+    ```bash
+    touch /var/run/app/heartbeat.txt
+    ```
+    *   If `/var/run/app/heartbeat.txt` already exists, `touch` will update its access and modification timestamps to the current time without altering its contents. This is exactly what a monitoring script might expect for a heartbeat file.
+
+3.  Create multiple empty files simultaneously:
+    ```bash
+    touch /var/log/myapp/{app.log,access.log,error.log}
+    ```
+    *   This uses brace expansion (a shell feature) to expand the command into `touch /var/log/myapp/app.log /var/log/myapp/access.log /var/log/myapp/error.log`. This is a convenient way to create multiple files with similar path structures. Again, the directory `/var/log/myapp/` must exist.
+
+Q7: As a DevOps engineer, you need to quickly inspect a newly created log file, `app_startup.log`, which is located in `/var/log/my_application/`. This directory might not exist yet.
+1. Provide the commands to first ensure the directory `/var/log/my_application/` exists, creating it if necessary.
+2. Then, create the empty `app_startup.log` file within that directory.
+3. Finally, list the contents of `/var/log/my_application/` in long format to verify the file was created correctly.
+Solution: This scenario combines directory management with file creation and verification, common tasks for DevOps engineers.
+
+1.  Ensure the directory `/var/log/my_application/` exists, creating it if necessary:
+    ```bash
+    mkdir -p /var/log/my_application/
+    ```
+    *   `mkdir`: Creates a new directory.
+    *   `-p` (or `--parents`): Creates parent directories as needed. If the directory already exists, `mkdir -p` will not return an error, making it idempotent and safe to run multiple times.
+
+2.  Create the empty `app_startup.log` file within that directory:
+    ```bash
+    touch /var/log/my_application/app_startup.log
+    ```
+    *   The `touch` command creates an empty file if it doesn't exist, or updates its timestamp if it does.
+
+3.  List the contents of `/var/log/my_application/` in long format to verify:
+    ```bash
+    ls -l /var/log/my_application/
+    ```
+    *   `ls -l`: Provides a detailed listing, including file permissions, ownership, size, and modification date, allowing you to confirm `app_startup.log` was created as expected.
+
+

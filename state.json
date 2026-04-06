@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
     "File Permissions & Ownership (chmod, chown, chgrp, umask)",
     "User and Group Management (useradd, usermod, groupadd, passwd)",
@@ -31,7 +30,8 @@
   ],
   "covered_topics": [
     "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)",
-    "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)"
+    "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
+    "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)"
   ],
   "recent_questions": [
     "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
@@ -47,6 +47,13 @@
     "Describe the function of the `/home` directory and its importance for multi-user Linux systems. How does it relate to user permissions?",
     "What is the `/proc` file system, and why is it unique compared to other directories? Provide examples of information a DevOps engineer might extract from `/proc`.",
     "Discuss the purpose of the `/bin` and `/sbin` directories. Why are they separated, and what types of commands would you expect to find in each?",
-    "Explain the concept of 'mounting' in the context of the Linux file system hierarchy. Provide a practical scenario where a DevOps engineer would need to mount a file system."
+    "Explain the concept of 'mounting' in the context of the Linux file system hierarchy. Provide a practical scenario where a DevOps engineer would need to mount a file system.",
+    "A DevOps engineer needs to inspect the contents of the `/var/log` directory to troubleshoot an application issue. Describe how you would use the `ls` command to:\n1. List all files and directories, including hidden ones.\n2. Display them in a long format, showing permissions, ownership, size, and modification time.\n3. Sort the output by modification time, with the newest files appearing first.\n4. Recursively list the contents of all subdirectories within `/var/log`.",
+    "You are currently in `/home/devops/projects/my_app`. Explain how you would use `cd` and `pwd` to achieve the following, detailing the commands and the expected `pwd` output after each step:\n1. Navigate to the `/etc/nginx` directory using an absolute path.\n2. Return to your previous working directory.\n3. Navigate to the `/home/devops/configs` directory (assuming `configs` is a sibling of `projects`).\n4. Navigate directly to your home directory from anywhere.",
+    "Before modifying a critical Nginx configuration file located at `/etc/nginx/nginx.conf`, a DevOps engineer needs to create a backup.\n1. How would you copy this file to `/tmp/nginx.conf.bak`?\n2. After making changes, you realize you need to revert to the backup. How would you copy the backup file back to its original location, ensuring you preserve the original file's permissions and ownership (if you had them initially)?\n3. What command would you use to copy an entire directory, say `/opt/app_data`, to `/var/backups/app_data_backup`?",
+    "A new version of your web application's static assets is in `/tmp/new_assets`. The current production assets are in `/var/www/html/assets`. \n1. How would you replace the old assets with the new ones, assuming you want to move the new assets into place and effectively delete the old ones (or overwrite if `mv` behaves that way)?\n2. After deployment, you realize a log file named `debug.log` was accidentally created in `/var/www/html`. How would you move it to `/var/log/nginx/` and rename it to `webapp_debug.log` in a single command?",
+    "You've been tasked with cleaning up temporary build artifacts from the `/tmp` directory.\n1. How would you safely remove a single file named `build_output.tar.gz` from `/tmp`?\n2. You then discover an entire directory, `/tmp/old_builds`, which contains many files and subdirectories. How would you remove this directory and all its contents without being prompted for confirmation for each file?\n3. What critical precaution should a DevOps engineer *always* take before executing `rm -rf` in a production environment?",
+    "A monitoring script expects a `heartbeat.txt` file to exist in `/var/run/app/` and to be updated every minute.\n1. How would you create this empty file if it doesn't exist?\n2. If the file already exists, how would you update its modification timestamp without changing its content?\n3. Imagine you want to create multiple empty files for different application logs, e.g., `app.log`, `access.log`, `error.log` in `/var/log/myapp/`. How would you create all three simultaneously using `touch`?",
+    "As a DevOps engineer, you need to quickly inspect a newly created log file, `app_startup.log`, which is located in `/var/log/my_application/`. This directory might not exist yet.\n1. Provide the commands to first ensure the directory `/var/log/my_application/` exists, creating it if necessary.\n2. Then, create the empty `app_startup.log` file within that directory.\n3. Finally, list the contents of `/var/log/my_application/` in long format to verify the file was created correctly."
   ]
 }
