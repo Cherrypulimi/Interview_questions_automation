@@ -3,7 +3,7 @@ name: Daily LinkedIn Interview Questions
 on:
   schedule:
     # Runs at 2:30 AM and 2:30 PM UTC
-    - cron: '30 2,14 * * *'
+    - cron: '30 3,15 * * *'
   workflow_dispatch: # Allows manual triggering from the GitHub UI
 
 # Grant the workflow permission to push commits to the repo
