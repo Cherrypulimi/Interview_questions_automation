@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "File Permissions & Ownership (chmod, chown, chgrp, umask)",
     "User and Group Management (useradd, usermod, groupadd, passwd)",
     "Linux Process Management (ps, top, htop, nice, kill, pkill)",
     "Linux Package Management (apt, yum, dnf, rpm)",
@@ -31,7 +30,8 @@
     "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)",
     "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
     "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
-    "File Viewing & Text Processing Commands (cat, less, head, tail, wc)"
+    "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
+    "File Permissions & Ownership (chmod, chown, chgrp, umask)"
   ],
   "recent_questions": [
     "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
@@ -61,6 +61,13 @@
     "As a DevOps engineer, you're tasked with auditing a directory `/var/log/application_logs/` which contains numerous log files. You need to quickly determine: 1. The total number of files in this directory. 2. The total number of lines across all `.log` files within this directory. 3. The total byte count of all `.log` files. How would you accomplish this using `wc` in combination with other Linux commands?",
     "You are debugging a Java application whose logs are written to `java_app.log` in `/opt/app/logs/`. This file can be very large. You need to find all occurrences of the string \"OutOfMemoryError\" and display only the first 10 such lines to quickly identify if this is a recurring issue. How would you combine `grep` with other commands to achieve this efficient filtering and limiting?",
     "You are troubleshooting an issue and need to quickly inspect a critical application configuration file, `/etc/myapp/config.yaml`. Before making any changes, you want to: 1. Create a quick backup of the file in `/tmp/`. 2. Ensure the original file's permissions are set to `644` (read/write for owner, read-only for group and others) for security. 3. Finally, view the contents of the original file using a pager that allows scrolling. Provide the commands for each step.",
-    "Your CI/CD pipeline generates multiple build artifacts and logs in a directory called `build_artifacts/`. You need to identify the 3 largest build log files (named `build-*.log`) within this directory and display the last 20 lines of each of these top 3 files for a quick sanity check. How would you combine `ls`, `sort`, `head`, `awk`, and `xargs` to achieve this?"
+    "Your CI/CD pipeline generates multiple build artifacts and logs in a directory called `build_artifacts/`. You need to identify the 3 largest build log files (named `build-*.log`) within this directory and display the last 20 lines of each of these top 3 files for a quick sanity check. How would you combine `ls`, `sort`, `head`, `awk`, and `xargs` to achieve this?",
+    "Explain the concept of file permissions in Linux using both octal and symbolic modes. Provide examples of how to grant read, write, and execute permissions to the owner, group, and others for a script file named `deploy.sh`.",
+    "Differentiate between `chown` and `chgrp`. Provide a scenario where a DevOps engineer would use both commands to manage ownership for an application's files and directories.",
+    "What is `umask` and how does it affect the default permissions of newly created files and directories? Provide an example of how a DevOps engineer might set a specific `umask` for security reasons.",
+    "Explain the purpose and usage of special permissions in Linux: SUID, SGID, and Sticky Bit. Provide a practical example for each.",
+    "You are deploying a sensitive configuration file, `/etc/myapp/config.yml`, which contains database credentials. Describe the `chmod` and `chown` commands you would use to secure this file, ensuring only the `root` user can read/write it and no one else has any access. Why is this important from a security perspective?",
+    "You have a directory `/data/backups` that should be accessible by all users in the `backup_admins` group for read/write operations, but no one else should have any access. New files created in this directory should also inherit the `backup_admins` group. Outline the commands to achieve this, explaining each step.",
+    "Explain how directory permissions differ from file permissions. Specifically, what does the 'execute' permission mean for a directory compared to a file? Provide an example where incorrect directory permissions prevent access to a file, even if the file itself has correct permissions."
   ]
 }
