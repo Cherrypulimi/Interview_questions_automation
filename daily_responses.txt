@@ -538,3 +538,157 @@ Solution: This scenario combines directory management with file creation and ver
     *   `ls -l`: Provides a detailed listing, including file permissions, ownership, size, and modification date, allowing you to confirm `app_startup.log` was created as expected.
 
 
+--- Date: 2026-04-07 05:24:09 ---
+Topic: File Viewing & Text Processing Commands (cat, less, head, tail, wc)
+Description: Linux file viewing and text processing commands are essential for every DevOps Engineer. Mastering tools like `cat`, `less`, `head`, `tail`, and `wc` allows you to quickly inspect logs, analyze configuration files, and troubleshoot issues efficiently. Swipe through these 7 interview questions to sharpen your skills and ace your next technical interview! #interviewprep #dataengineering #linux #devops #sre #cloudengineering
+
+Q1: A junior engineer is struggling to view the content of a small configuration file, `app.conf`, and accidentally used `less` for it, which felt overkill. Explain how they could use `cat` to quickly display the entire content of `app.conf`. Additionally, if they needed to combine the contents of `header.txt` and `body.txt` into a new file called `full_report.txt`, how would `cat` be used for that?
+Solution: The `cat` command (short for concatenate) is primarily used to display the contents of files and to concatenate files. It's ideal for small files because it outputs the entire content to standard output (your terminal) at once.
+
+*   To display the entire content of `app.conf`:
+    ```bash
+    cat app.conf
+    ```
+    This command will print every line of `app.conf` directly to the terminal, allowing for a quick review.
+
+*   To combine `header.txt` and `body.txt` into `full_report.txt`:
+    ```bash
+    cat header.txt body.txt > full_report.txt
+    ```
+    Here, `cat` reads `header.txt` first, then `body.txt`, and concatenates their contents. The `>` operator redirects this combined output to a new file named `full_report.txt`. If `full_report.txt` already exists, it will be overwritten.
+
+Q2: You are troubleshooting a production issue and need to examine a very large log file, `production_access.log`, which is several gigabytes in size. Using `cat` is not feasible as it would flood your terminal and consume significant memory. How would you use `less` to efficiently view this file, and what are some common navigation commands you would use within `less` to search for specific entries or move through the file?
+Solution: The `less` command is designed for viewing large files efficiently because it loads the file page by page, rather than all at once. This makes it ideal for large log files where you don't want to flood your terminal or exhaust memory.
+
+*   To view `production_access.log` with `less`:
+    ```bash
+    less production_access.log
+    ```
+    This opens the file in a pager, displaying the first screenful of content.
+
+*   Common navigation commands within `less`:
+    *   `Spacebar` or `f`: Scroll forward one screen.
+    *   `b`: Scroll backward one screen.
+    *   `Enter` or `j`: Scroll forward one line.
+    *   `k`: Scroll backward one line.
+    *   `/pattern`: Search forward for a specific `pattern`. For example, `/ERROR` to find the next occurrence of 'ERROR'.
+    *   `?pattern`: Search backward for a specific `pattern`.
+    *   `n`: Go to the next occurrence of the last search pattern (forward).
+    *   `N`: Go to the previous occurrence of the last search pattern (backward).
+    *   `g`: Go to the beginning of the file.
+    *   `G`: Go to the end of the file.
+    *   `q`: Quit `less`.
+
+Q3: A critical service is experiencing intermittent failures, and you suspect an issue in its real-time logs. The application writes to `/var/log/myapp/service.log`. How would you display the *last 50 lines* of this log file and then continuously monitor it for *new entries as they are written*? Additionally, how would you quickly view only the *first 15 lines* of the `/etc/nginx/nginx.conf` file to check its basic structure?
+Solution: The `head` and `tail` commands are crucial for inspecting the beginning or end of files, especially in dynamic logging scenarios.
+
+*   To display the last 50 lines of `service.log`:
+    ```bash
+    tail -n 50 /var/log/myapp/service.log
+    ```
+    The `-n` option specifies the number of lines from the end of the file.
+
+*   To continuously monitor `service.log` for new entries:
+    ```bash
+    tail -f /var/log/myapp/service.log
+    ```
+    The `-f` (follow) option keeps the file open and continuously outputs new data as it's appended to the log. You can combine it with `-n` to start by showing the last N lines and then follow:
+    ```bash
+    tail -f -n 50 /var/log/myapp/service.log
+    ```
+    Press `Ctrl+C` to exit the `tail -f` process.
+
+*   To view the first 15 lines of `/etc/nginx/nginx.conf`:
+    ```bash
+    head -n 15 /etc/nginx/nginx.conf
+    ```
+    Similar to `tail`, the `head` command with `-n` displays a specified number of lines from the beginning of the file.
+
+Q4: As a DevOps engineer, you're tasked with auditing a directory `/var/log/application_logs/` which contains numerous log files. You need to quickly determine: 1. The total number of files in this directory. 2. The total number of lines across all `.log` files within this directory. 3. The total byte count of all `.log` files. How would you accomplish this using `wc` in combination with other Linux commands?
+Solution: The `wc` (word count) command is used to count lines, words, and characters (bytes) in files. It becomes powerful when combined with other commands via pipes.
+
+*   1. Total number of files in `/var/log/application_logs/`:
+    ```bash
+    ls -1 /var/log/application_logs/ | wc -l
+    ```
+    *   `ls -1`: Lists files one per line.
+    *   `wc -l`: Counts the number of lines in the output, which corresponds to the number of files.
+
+*   2. Total number of lines across all `.log` files in `/var/log/application_logs/`:
+    ```bash
+    find /var/log/application_logs/ -type f -name "*.log" -exec cat {} + | wc -l
+    ```
+    *   `find ... -type f -name "*.log"`: Locates all regular files ending with `.log` in the specified directory.
+    *   `-exec cat {} +`: Concatenates the content of all found files.
+    *   `wc -l`: Counts the total lines from the concatenated output.
+
+*   3. Total byte count of all `.log` files in `/var/log/application_logs/`:
+    ```bash
+    find /var/log/application_logs/ -type f -name "*.log" -exec wc -c {} + | awk '{sum+=$1} END {print sum}'
+    ```
+    *   `find ... -type f -name "*.log"`: Locates all regular files ending with `.log`.
+    *   `-exec wc -c {} +`: Runs `wc -c` on each found file, printing byte count and filename (e.g., `12345 file.log`).
+    *   `awk '{sum+=$1} END {print sum}'`: Processes the output of `wc -c`. For each line, it adds the first field (byte count) to a running `sum` and prints the `sum` at the end.
+
+Q5: You are debugging a Java application whose logs are written to `java_app.log` in `/opt/app/logs/`. This file can be very large. You need to find all occurrences of the string "OutOfMemoryError" and display only the first 10 such lines to quickly identify if this is a recurring issue. How would you combine `grep` with other commands to achieve this efficient filtering and limiting?
+Solution: This scenario requires combining `grep` for pattern matching with `head` for limiting the output, often piped from `cat` or directly using `grep`'s file input capabilities.
+
+*   Efficiently finding and limiting error messages:
+    ```bash
+    grep "OutOfMemoryError" /opt/app/logs/java_app.log | head -n 10
+    ```
+    *   `grep "OutOfMemoryError" /opt/app/logs/java_app.log`: This command searches for lines containing the exact string "OutOfMemoryError" within the `java_app.log` file. `grep` is highly optimized for this task.
+    *   `|`: The pipe operator takes the standard output of `grep` (the matching lines) and feeds it as standard input to the next command.
+    *   `head -n 10`: This command then takes the input from `grep` and outputs only the first 10 lines it receives. This effectively limits the output to the first 10 occurrences of the error, preventing your terminal from being flooded by a massive number of matches in a large log file.
+
+Q6: You are troubleshooting an issue and need to quickly inspect a critical application configuration file, `/etc/myapp/config.yaml`. Before making any changes, you want to: 1. Create a quick backup of the file in `/tmp/`. 2. Ensure the original file's permissions are set to `644` (read/write for owner, read-only for group and others) for security. 3. Finally, view the contents of the original file using a pager that allows scrolling. Provide the commands for each step.
+Solution: This task involves a sequence of common DevOps operations: backing up, setting permissions, and then viewing a file.
+
+*   1. Create a quick backup of the file in `/tmp/`:
+    ```bash
+    sudo cp /etc/myapp/config.yaml /tmp/config.yaml.bak
+    ```
+    *   `sudo`: Required as `/etc` usually needs root privileges for copying.
+    *   `cp`: Copies the source file to the destination. We're creating a `.bak` extension for clarity.
+
+*   2. Ensure the original file's permissions are set to `644`:
+    ```bash
+    sudo chmod 644 /etc/myapp/config.yaml
+    ```
+    *   `sudo`: Again, required for modifying files in `/etc`.
+    *   `chmod`: Changes file permissions. `644` means:
+        *   Owner: Read (4) + Write (2) = 6
+        *   Group: Read (4) = 4
+        *   Others: Read (4) = 4
+
+*   3. View the contents of the original file using a pager:
+    ```bash
+    less /etc/myapp/config.yaml
+    ```
+    *   `less`: A pager that allows you to scroll through the file content without loading the entire file into memory, which is ideal for configuration files that might be long or when you need to search within them. You can use navigation commands like `Spacebar` to scroll down, `b` to scroll up, and `/` to search.
+
+Q7: Your CI/CD pipeline generates multiple build artifacts and logs in a directory called `build_artifacts/`. You need to identify the 3 largest build log files (named `build-*.log`) within this directory and display the last 20 lines of each of these top 3 files for a quick sanity check. How would you combine `ls`, `sort`, `head`, `awk`, and `xargs` to achieve this?
+Solution: This is a common advanced scenario in DevOps for quickly identifying and inspecting the most relevant (e.g., largest) files.
+
+```bash
+ls -lh build_artifacts/build-*.log \
+  | awk '{print $5, $9}' \
+  | sort -rhk 1 \
+  | head -n 3 \
+  | awk '{print $2}' \
+  | xargs -I {} tail -n 20 "{}"
+```
+
+*   1. `ls -lh build_artifacts/build-*.log`: Lists all `build-*.log` files in `build_artifacts/` in a long format (`-l`) with human-readable sizes (`-h`). Example output: `1.2K build-001.log`.
+
+*   2. `awk '{print $5, $9}'`: Extracts the 5th column (file size) and the 9th column (filename) from `ls -lh` output. This simplifies the data for sorting.
+
+*   3. `sort -rhk 1`: Sorts the output. `-r` for reverse order (largest first), `-h` for human-numeric sort (to correctly handle `K`, `M`, `G` sizes), and `-k 1` specifies sorting by the first column (size).
+
+*   4. `head -n 3`: Takes only the top 3 lines from the sorted output, effectively giving us the 3 largest files and their sizes.
+
+*   5. `awk '{print $2}'`: From the `size filename` output, this extracts just the filename (2nd column).
+
+*   6. `xargs -I {} tail -n 20 "{}"`: `xargs` takes the filenames from `awk`'s output and passes each as an argument to `tail -n 20`. The `-I {}` option tells `xargs` to replace `{}` with each input item, and `"{}"` ensures filenames with spaces are handled correctly.
+
+
