@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "User and Group Management (useradd, usermod, groupadd, passwd)",
     "Linux Process Management (ps, top, htop, nice, kill, pkill)",
     "Linux Package Management (apt, yum, dnf, rpm)",
     "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
@@ -31,7 +30,8 @@
     "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
     "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
-    "File Permissions & Ownership (chmod, chown, chgrp, umask)"
+    "File Permissions & Ownership (chmod, chown, chgrp, umask)",
+    "User and Group Management (useradd, usermod, groupadd, passwd)"
   ],
   "recent_questions": [
     "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
@@ -68,6 +68,13 @@
     "Explain the purpose and usage of special permissions in Linux: SUID, SGID, and Sticky Bit. Provide a practical example for each.",
     "You are deploying a sensitive configuration file, `/etc/myapp/config.yml`, which contains database credentials. Describe the `chmod` and `chown` commands you would use to secure this file, ensuring only the `root` user can read/write it and no one else has any access. Why is this important from a security perspective?",
     "You have a directory `/data/backups` that should be accessible by all users in the `backup_admins` group for read/write operations, but no one else should have any access. New files created in this directory should also inherit the `backup_admins` group. Outline the commands to achieve this, explaining each step.",
-    "Explain how directory permissions differ from file permissions. Specifically, what does the 'execute' permission mean for a directory compared to a file? Provide an example where incorrect directory permissions prevent access to a file, even if the file itself has correct permissions."
+    "Explain how directory permissions differ from file permissions. Specifically, what does the 'execute' permission mean for a directory compared to a file? Provide an example where incorrect directory permissions prevent access to a file, even if the file itself has correct permissions.",
+    "Explain the primary differences between `useradd` and `adduser` commands in Linux. Which one is generally recommended for DevOps engineers and why?",
+    "A DevOps team needs to onboard a new engineer, 'alice'. Create a user `alice` with a home directory at `/home/devops_users/alice`, a default shell of `/bin/bash`, and add her to two existing secondary groups: `developers` and `operations`. Provide the command(s) and explain each part.",
+    "The user `alice` (from the previous question) has been promoted and now needs her username changed to `alicia`, her home directory moved to `/home/sre_users/alicia`, and her primary group changed to `sre`. Additionally, she should be removed from the `developers` group but remain in `operations`. How would you achieve this using `usermod`?",
+    "Your team needs a new shared directory for project files. Create a new group named `project_alpha`, then create a directory `/opt/project_alpha_data`. Ensure that only members of `project_alpha` can read, write, and execute (traverse) within this directory, and that any new files or subdirectories created within `/opt/project_alpha_data` automatically inherit the `project_alpha` group ownership.",
+    "After creating a new user `bob` for a temporary task, you need to set a password for him, ensure it expires after 30 days, and force him to change it on his first login. How would you accomplish this using `passwd` and other related commands?",
+    "A contractor, `charlie`, has completed his assignment. You need to remove his user account and his primary group `charlie_group` from the system. Explain the commands and the considerations you should take regarding his home directory and any files he might own.",
+    "A third-party vendor needs temporary SSH access to a server to troubleshoot a specific application issue. You decide to create a new user `vendor_support` with a restricted shell (`/bin/rbash`) and add them to a temporary group `app_troubleshooters`. This group should also have read-only access to `/var/log/myapp/` and full read/write access to `/tmp/vendor_work/` (which doesn't exist yet). Outline the steps, including user/group creation, directory setup, and permissions. After the troubleshooting, how would you quickly revoke their access?"
   ]
 }
