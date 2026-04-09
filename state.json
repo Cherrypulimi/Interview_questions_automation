@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Process Management (ps, top, htop, nice, kill, pkill)",
     "Linux Package Management (apt, yum, dnf, rpm)",
     "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
@@ -31,7 +30,8 @@
     "Basic Linux Commands (ls, cd, pwd, cp, mv, rm, touch)",
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
     "File Permissions & Ownership (chmod, chown, chgrp, umask)",
-    "User and Group Management (useradd, usermod, groupadd, passwd)"
+    "User and Group Management (useradd, usermod, groupadd, passwd)",
+    "Linux Process Management (ps, top, htop, nice, kill, pkill)"
   ],
   "recent_questions": [
     "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
@@ -75,6 +75,13 @@
     "Your team needs a new shared directory for project files. Create a new group named `project_alpha`, then create a directory `/opt/project_alpha_data`. Ensure that only members of `project_alpha` can read, write, and execute (traverse) within this directory, and that any new files or subdirectories created within `/opt/project_alpha_data` automatically inherit the `project_alpha` group ownership.",
     "After creating a new user `bob` for a temporary task, you need to set a password for him, ensure it expires after 30 days, and force him to change it on his first login. How would you accomplish this using `passwd` and other related commands?",
     "A contractor, `charlie`, has completed his assignment. You need to remove his user account and his primary group `charlie_group` from the system. Explain the commands and the considerations you should take regarding his home directory and any files he might own.",
-    "A third-party vendor needs temporary SSH access to a server to troubleshoot a specific application issue. You decide to create a new user `vendor_support` with a restricted shell (`/bin/rbash`) and add them to a temporary group `app_troubleshooters`. This group should also have read-only access to `/var/log/myapp/` and full read/write access to `/tmp/vendor_work/` (which doesn't exist yet). Outline the steps, including user/group creation, directory setup, and permissions. After the troubleshooting, how would you quickly revoke their access?"
+    "A third-party vendor needs temporary SSH access to a server to troubleshoot a specific application issue. You decide to create a new user `vendor_support` with a restricted shell (`/bin/rbash`) and add them to a temporary group `app_troubleshooters`. This group should also have read-only access to `/var/log/myapp/` and full read/write access to `/tmp/vendor_work/` (which doesn't exist yet). Outline the steps, including user/group creation, directory setup, and permissions. After the troubleshooting, how would you quickly revoke their access?",
+    "How do you list all processes running on a system, display them in a hierarchical format, and filter for processes owned by a specific user or associated with a particular application?",
+    "Compare and contrast `top` and `htop` for real-time process monitoring. When would you choose one over the other, and what are some key features unique to `htop` that enhance a DevOps engineer's workflow?",
+    "Explain the concept of process signals and their role in terminating processes gracefully or forcefully. Provide examples of common signals (SIGTERM, SIGKILL, SIGHUP) and demonstrate how to use `kill` and `pkill` to manage processes, including targeting processes by name.",
+    "As a DevOps engineer, you encounter a long-running batch job that is consuming excessive CPU resources, impacting other critical services. How would you use `nice` and `renice` to adjust its scheduling priority without stopping the job, and what are the implications of changing a process's nice value?",
+    "You need to run a script that takes a long time to complete, but you also need to use your terminal for other tasks. How would you run this script in the background, bring it back to the foreground if needed, and what command would you use to list all backgrounded jobs in your current session?",
+    "Explain what zombie and orphan processes are, why they occur, and their potential impact on a system. How would a DevOps engineer identify and address these types of processes?",
+    "You've deployed a new application that runs as a daemon. How would you ensure this application consistently runs under a dedicated, non-root user (e.g., `appuser`) for security reasons, and how would you verify its process ownership and status using command-line tools?"
   ]
 }
