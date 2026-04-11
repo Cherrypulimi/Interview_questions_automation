@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
     "Searching & Filtering Data (grep, find, locate, awk, sed)",
     "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)",
@@ -31,16 +30,10 @@
     "File Permissions & Ownership (chmod, chown, chgrp, umask)",
     "User and Group Management (useradd, usermod, groupadd, passwd)",
     "Linux Process Management (ps, top, htop, nice, kill, pkill)",
-    "Linux Package Management (apt, yum, dnf, rpm)"
+    "Linux Package Management (apt, yum, dnf, rpm)",
+    "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)"
   ],
   "recent_questions": [
-    "Briefly describe the high-level stages of the Linux boot process, emphasizing the kernel's role.",
-    "Explain the significance of the root directory (/) in Linux and describe its role as the top-level directory in the file system hierarchy.",
-    "What is the primary purpose of the `/etc` directory in Linux? Provide examples of common files or subdirectories found within it that are critical for system configuration.",
-    "Differentiate between `/var` and `/tmp` directories. When would a DevOps engineer typically interact with each, and what kind of data would they expect to find?",
-    "Describe the function of the `/home` directory and its importance for multi-user Linux systems. How does it relate to user permissions?",
-    "What is the `/proc` file system, and why is it unique compared to other directories? Provide examples of information a DevOps engineer might extract from `/proc`.",
-    "Discuss the purpose of the `/bin` and `/sbin` directories. Why are they separated, and what types of commands would you expect to find in each?",
     "Explain the concept of 'mounting' in the context of the Linux file system hierarchy. Provide a practical scenario where a DevOps engineer would need to mount a file system.",
     "A DevOps engineer needs to inspect the contents of the `/var/log` directory to troubleshoot an application issue. Describe how you would use the `ls` command to:\n1. List all files and directories, including hidden ones.\n2. Display them in a long format, showing permissions, ownership, size, and modification time.\n3. Sort the output by modification time, with the newest files appearing first.\n4. Recursively list the contents of all subdirectories within `/var/log`.",
     "You are currently in `/home/devops/projects/my_app`. Explain how you would use `cd` and `pwd` to achieve the following, detailing the commands and the expected `pwd` output after each step:\n1. Navigate to the `/etc/nginx` directory using an absolute path.\n2. Return to your previous working directory.\n3. Navigate to the `/home/devops/configs` directory (assuming `configs` is a sibling of `projects`).\n4. Navigate directly to your home directory from anywhere.",
@@ -83,6 +76,13 @@
     "You need to install a specific version of a software package, `myapp-1.2.3.rpm`, which is not available in your configured `dnf` or `yum` repositories on a Red Hat-based system. Describe how you would install this local `.rpm` file directly and explain the potential challenges or risks compared to using `dnf`/`yum`.",
     "Explain the difference between `apt update` and `apt upgrade` (or `yum check-update` and `yum update`) commands. As a DevOps engineer, when would you use each, and what considerations should be taken before performing a full system upgrade in a production environment?",
     "You need to add a custom package repository (e.g., a PPA on Ubuntu for a newer version of Git, or a `.repo` file on CentOS for a specific vendor's software). Describe the steps to add and then remove such a repository on both Debian-based and Red Hat-based systems, explaining why repository management is important for security and stability.",
-    "During a critical package installation on a CentOS 8 server using `dnf`, the process hangs indefinitely, indicating a potential file lock or a service holding resources. How would you diagnose which process is causing the lock, and what steps would you take to resolve this issue safely to complete the `dnf` operation?"
+    "During a critical package installation on a CentOS 8 server using `dnf`, the process hangs indefinitely, indicating a potential file lock or a service holding resources. How would you diagnose which process is causing the lock, and what steps would you take to resolve this issue safely to complete the `dnf` operation?",
+    "A critical microservice deployed on a remote server is intermittently unreachable, and users are reporting slow response times when it is accessible. How would you use `ping` and `traceroute` to diagnose potential network connectivity issues, packet loss, or latency problems? Explain what specific output patterns you would look for from each command to pinpoint the problem.",
+    "You suspect a port conflict or an unauthorized service listening on a critical port (e.g., 80 or 443) on your Linux server. Explain how `netstat` and `ss` can be used to identify listening ports, established connections, and associated processes. Which tool is generally preferred in modern Linux environments and why?",
+    "You need to automate the download of a large file from a remote HTTP server, ensuring that the download can resume if interrupted. Additionally, you need to test a REST API endpoint that requires sending custom headers (e.g., `Authorization`) and posting JSON data, while also seeing the full HTTP response headers. Which networking utility (or utilities) would you use for each task, and demonstrate with commands?",
+    "A newly deployed microservice is failing to start, reporting 'Address already in use' in its logs. How would you first use `ss` or `netstat` to identify which process is already occupying the required port, and then use process management commands (`ps`, `kill`) to resolve the conflict if necessary?",
+    "After deploying a new web service, some users in a specific region report 'connection timed out' errors, while others can access it fine. You run `traceroute` to the service IP from an affected client. Describe how you would interpret the `traceroute` output, specifically looking for common indicators of firewall blocks, asymmetric routing, or congested network segments.",
+    "You are debugging an intermittent issue with a third-party API. You need to simulate a POST request with JSON data, include an `Authorization` header, and see the full HTTP request and response headers for detailed analysis. How would you use `curl` to achieve this, and what options would you employ to get verbose output for debugging?",
+    "A server is experiencing high network load, and you suspect an unusually large number of ephemeral connections, potentially from a misbehaving application or a port scan. How would you use `ss` to quickly list all established TCP connections, filter them by state (e.g., `ESTABLISHED`, `TIME-WAIT`), and count connections to specific ports or from specific remote IP addresses?"
   ]
 }
