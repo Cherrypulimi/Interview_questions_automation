@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Package Management (apt, yum, dnf, rpm)",
     "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
     "Searching & Filtering Data (grep, find, locate, awk, sed)",
@@ -31,15 +30,10 @@
     "File Viewing & Text Processing Commands (cat, less, head, tail, wc)",
     "File Permissions & Ownership (chmod, chown, chgrp, umask)",
     "User and Group Management (useradd, usermod, groupadd, passwd)",
-    "Linux Process Management (ps, top, htop, nice, kill, pkill)"
+    "Linux Process Management (ps, top, htop, nice, kill, pkill)",
+    "Linux Package Management (apt, yum, dnf, rpm)"
   ],
   "recent_questions": [
-    "Explain the role of the Linux Kernel and how it interacts with hardware and user-space applications.",
-    "What is a shell in Linux, and what are its primary functions? Name a few common shells and their differences.",
-    "Differentiate between popular Linux distributions like Ubuntu, CentOS/RHEL, and Alpine Linux, highlighting their typical use cases in a DevOps environment.",
-    "Explain the concept of system calls and provide an example of how a user-space program might utilize one.",
-    "What is the primary difference between the Linux Kernel and the Shell?",
-    "Why is shell scripting crucial for DevOps engineers? Provide a simple example of a shell script to automate a common task.",
     "Briefly describe the high-level stages of the Linux boot process, emphasizing the kernel's role.",
     "Explain the significance of the root directory (/) in Linux and describe its role as the top-level directory in the file system hierarchy.",
     "What is the primary purpose of the `/etc` directory in Linux? Provide examples of common files or subdirectories found within it that are critical for system configuration.",
@@ -82,6 +76,13 @@
     "As a DevOps engineer, you encounter a long-running batch job that is consuming excessive CPU resources, impacting other critical services. How would you use `nice` and `renice` to adjust its scheduling priority without stopping the job, and what are the implications of changing a process's nice value?",
     "You need to run a script that takes a long time to complete, but you also need to use your terminal for other tasks. How would you run this script in the background, bring it back to the foreground if needed, and what command would you use to list all backgrounded jobs in your current session?",
     "Explain what zombie and orphan processes are, why they occur, and their potential impact on a system. How would a DevOps engineer identify and address these types of processes?",
-    "You've deployed a new application that runs as a daemon. How would you ensure this application consistently runs under a dedicated, non-root user (e.g., `appuser`) for security reasons, and how would you verify its process ownership and status using command-line tools?"
+    "You've deployed a new application that runs as a daemon. How would you ensure this application consistently runs under a dedicated, non-root user (e.g., `appuser`) for security reasons, and how would you verify its process ownership and status using command-line tools?",
+    "Differentiate between `apt`, `apt-get`, `yum`, and `dnf` in terms of their primary functions, target distributions, and key advantages or use cases for a DevOps engineer.",
+    "As a DevOps engineer, you've inherited a server and need to determine which package owns the `/usr/bin/kubectl` executable and which version is installed. How would you accomplish this on both a Debian-based system (e.g., Ubuntu) and a Red Hat-based system (e.g., CentOS/RHEL)?",
+    "A critical application update on a Debian-based server fails due to unmet dependencies, and the package manager reports 'broken packages'. Explain the common causes of this issue and provide the commands you would use to diagnose and attempt to resolve it.",
+    "You need to install a specific version of a software package, `myapp-1.2.3.rpm`, which is not available in your configured `dnf` or `yum` repositories on a Red Hat-based system. Describe how you would install this local `.rpm` file directly and explain the potential challenges or risks compared to using `dnf`/`yum`.",
+    "Explain the difference between `apt update` and `apt upgrade` (or `yum check-update` and `yum update`) commands. As a DevOps engineer, when would you use each, and what considerations should be taken before performing a full system upgrade in a production environment?",
+    "You need to add a custom package repository (e.g., a PPA on Ubuntu for a newer version of Git, or a `.repo` file on CentOS for a specific vendor's software). Describe the steps to add and then remove such a repository on both Debian-based and Red Hat-based systems, explaining why repository management is important for security and stability.",
+    "During a critical package installation on a CentOS 8 server using `dnf`, the process hangs indefinitely, indicating a potential file lock or a service holding resources. How would you diagnose which process is causing the lock, and what steps would you take to resolve this issue safely to complete the `dnf` operation?"
   ]
 }
