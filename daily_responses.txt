@@ -2177,3 +2177,169 @@ du -shL /var/log/myapp/app.log
         ```
 
 
+--- Date: 2026-04-17 05:39:33 ---
+Topic: Searching & Filtering Data (grep, find, locate, awk, sed)
+Description: Mastering Linux command-line tools for searching and filtering data is crucial for any DevOps Engineer. From troubleshooting logs to automating data extraction, `grep`, `find`, `awk`, and `sed` are your best friends. Ready to test your skills? Swipe through these 7 interview questions and solutions designed to sharpen your command-line prowess!
+#Linux #DevOps #CLI #InterviewPrep #DataEngineering #SysAdmin
+
+Q1: You're troubleshooting an application and need to quickly find all occurrences of the word "ERROR" (case-insensitive) in a log file named `app.log` within the current directory. You also need to see the line number for each error. How would you accomplish this using `grep`?
+Solution: The `grep` command is ideal for pattern searching in text files. To achieve this, you'd use a combination of options:
+
+*   The `-i` option makes the search case-insensitive.
+*   The `-n` option displays the line number for each match.
+
+```bash
+grep -in "ERROR" app.log
+```
+
+Example Output:
+```
+10:2023-10-27 10:30:05 [ERROR] Database connection failed.
+55:2023-10-27 10:31:12 [ERROR] NullPointerException in main service.
+```
+
+Q2: As a DevOps engineer, you often deal with configuration files. You need to find all `.conf` files in the `/etc` directory and its subdirectories that have been modified in the last 7 days. Once found, you want to print their full paths. How would you use the `find` command for this task?
+Solution: The `find` command is powerful for locating files based on various criteria. To find `.conf` files modified in the last 7 days:
+
+*   `find /etc`: Specifies the starting directory for the search.
+*   `-name "*.conf"`: Filters for files ending with `.conf`.
+*   `-mtime -7`: Filters for files modified within the last 7 days (less than 7 * 24 hours ago).
+*   `-print`: Prints the full path of the found files (this is often the default action, but good to be explicit).
+
+```bash
+find /etc -name "*.conf" -mtime -7 -print
+```
+
+Example Output:
+```
+/etc/nginx/nginx.conf
+/etc/apache2/mods-enabled/php7.4.conf
+/etc/ssh/sshd_config
+```
+
+Q3: You have a CSV file named `users.csv` with a format like `username,uid,group,shell`. You need to extract only the `username` (first field) and `shell` (fourth field) for users whose `uid` (second field) is greater than or equal to 1000. How would you achieve this using `awk`?
+Solution: The `awk` command is excellent for text processing, especially when dealing with structured data based on fields.
+
+*   `awk -F ','`: Sets the field separator to a comma.
+*   `'$2 >= 1000'`: This is the condition block. It specifies that the action should only be performed if the second field (`$2`, which is `uid`) is greater than or equal to 1000.
+*   `'{print $1, $4}'`: This is the action block. For lines that meet the condition, it prints the first field (`$1`, username) and the fourth field (`$4`, shell).
+
+```bash
+# Sample users.csv content:
+# john,1001,dev,bash
+# jane,500,ops,nologin
+# admin,0,root,bash
+# alice,1002,qa,zsh
+
+awk -F ',' '$2 >= 1000 {print $1, $4}' users.csv
+```
+
+Example Output:
+```
+john bash
+alice zsh
+```
+
+Q4: You're deploying a new version of an application and need to update its configuration file, `config.ini`. Specifically, you need to change the `DEBUG_MODE` setting from `True` to `False` and uncomment a line that starts with `#LOG_LEVEL=INFO` by removing the leading hash. How would you use `sed` to perform these two operations directly on the file?
+Solution: `sed` (stream editor) is perfect for performing basic text transformations on an input stream or file. You can chain multiple `sed` commands using the `-e` option.
+
+*   `sed -i`: The `-i` option (in-place) modifies the file directly.
+*   `'s/DEBUG_MODE=True/DEBUG_MODE=False/g'`: This is the first substitution command. `s` indicates substitute, the first `/` is the delimiter, `DEBUG_MODE=True` is the pattern to find, `DEBUG_MODE=False` is the replacement string, and `g` ensures all occurrences on a line are replaced (though typically there's only one for config settings).
+*   `'/^#LOG_LEVEL=INFO/s/^#//'`: This is the second substitution. `^#LOG_LEVEL=INFO` matches lines starting with `#LOG_LEVEL=INFO`. The `s/^#//` then removes the leading hash (`#`) from the matched line.
+
+```bash
+# Sample config.ini content:
+# [Settings]
+# DEBUG_MODE=True
+# #LOG_LEVEL=INFO
+# DATABASE_URL=localhost
+
+sed -i -e 's/DEBUG_MODE=True/DEBUG_MODE=False/g' -e '/^#LOG_LEVEL=INFO/s/^#//' config.ini
+```
+
+Resulting `config.ini` content:
+```
+[Settings]
+DEBUG_MODE=False
+LOG_LEVEL=INFO
+DATABASE_URL=localhost
+```
+
+Q5: Explain the difference between `find` and `locate`. When would you choose one over the other for a specific task?
+Solution: `find` and `locate` are both used for finding files, but they operate on fundamentally different principles and are suited for different use cases.
+
+*   `find`: This command searches the filesystem in real-time. It traverses directories and checks files against specified criteria (name, size, modification time, permissions, etc.).
+    *   Pros: Always up-to-date results, highly flexible with complex search criteria, can execute commands on found files.
+    *   Cons: Can be slow on large filesystems as it scans disk directly, resource-intensive.
+    *   Use Case: When you need to find files based on dynamic criteria (e.g., modified in the last hour), execute actions on found files, or search for files in specific, non-indexed locations.
+
+*   `locate`: This command searches a pre-built database of filenames (typically updated daily by `updatedb`). It does not search the filesystem directly.
+    *   Pros: Extremely fast as it's querying an index, very low resource usage.
+    *   Cons: Results might be out-of-date (files created/deleted since the last `updatedb` run won't appear/disappear), only searches by filename/path (no other criteria like size or time), requires `updatedb` to be run periodically.
+    *   Use Case: When you need to quickly find a file by its name or part of its name across the entire system, and you don't need real-time accuracy or complex search criteria (e.g., `locate sshd_config`).
+
+Summary: Use `find` for precise, real-time, criterion-rich searches and actions. Use `locate` for rapid, simple filename searches across the entire system where freshness isn't a critical concern.
+
+Q6: You need to identify all executable shell scripts (files ending with `.sh` and having execute permissions) within your current working directory and its subdirectories. For each script found, you want to display its name and then execute it. How would you combine `find` with the `exec` option to achieve this?
+Solution: This scenario perfectly demonstrates the power of `find`'s `-exec` option, which allows you to run commands on the files it finds.
+
+*   `find .`: Starts the search from the current directory.
+*   `-name "*.sh"`: Filters for files ending with `.sh`.
+*   `-type f`: Ensures we only consider regular files (not directories or other types).
+*   `-executable`: Filters for files that have the execute permission set for the current user.
+*   `-print -exec {} \;`: This is the crucial part.
+    *   `-print`: Prints the full path of the found script.
+    *   `-exec {} \;`: Executes a command for each found file. `{}` is a placeholder for the current filename, and `\;` marks the end of the command to be executed by `find`.
+
+```bash
+# Assuming you have scripts like these:
+# ./scripts/hello.sh
+# ./my_script.sh
+
+# --- Content of hello.sh ---
+# #!/bin/bash
+# echo "Hello from hello.sh"
+# ---
+
+# --- Content of my_script.sh ---
+# #!/bin/bash
+# echo "Executing my_script.sh"
+# ---
+
+find . -name "*.sh" -type f -executable -print -exec {} \;
+```
+
+Example Output:
+```
+./scripts/hello.sh
+Hello from hello.sh
+./my_script.sh
+Executing my_script.sh
+```
+
+Q7: You are analyzing a large web server access log, `access.log`. You need to extract all unique IP addresses that accessed the server, excluding any requests from local loopback (127.0.0.1). The IP address is always the first field in the log line, separated by a space. How would you combine `awk` and `sort -u` to get this list?
+Solution: This task requires extracting a specific field, filtering it, and then ensuring uniqueness, making it a great candidate for a pipeline involving `awk` and `sort`.
+
+1.  Extract the IP addresses with `awk`: `awk '{print $1}' access.log` will print the first field (IP address) of each line.
+2.  Filter out local loopback with `grep`: Pipe the output to `grep -v "127.0.0.1"` to exclude lines containing `127.0.0.1`.
+3.  Get unique IPs with `sort -u`: Pipe the filtered output to `sort -u` to sort the IP addresses and remove duplicates.
+
+```bash
+# Sample access.log content:
+# 192.168.1.100 - - [27/Oct/2023:10:00:00 +0000] "GET /index.html HTTP/1.1" 200 1234
+# 127.0.0.1 - - [27/Oct/2023:10:00:01 +0000] "GET /health HTTP/1.1" 200 10
+# 192.168.1.101 - - [27/Oct/2023:10:00:02 +0000] "GET /api/data HTTP/1.1" 200 567
+# 192.168.1.100 - - [27/Oct/2023:10:00:03 +0000] "GET /images/logo.png HTTP/1.1" 200 890
+# 10.0.0.5 - - [27/Oct/2023:10:00:04 +0000] "POST /login HTTP/1.1" 200 150
+
+awk '{print $1}' access.log | grep -v "127.0.0.1" | sort -u
+```
+
+Example Output:
+```
+10.0.0.5
+192.168.1.100
+192.168.1.101
+```
+
+
