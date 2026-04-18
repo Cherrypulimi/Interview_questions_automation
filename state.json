@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)",
     "Linux Environment Variables (export, env, printenv)",
     "Linux Shell Basics (Bash shell, command history, aliases)",
     "Bash Shell Scripting Fundamentals (variables, loops, conditions)",
@@ -31,16 +30,10 @@
     "Linux Package Management (apt, yum, dnf, rpm)",
     "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
-    "Searching & Filtering Data (grep, find, locate, awk, sed)"
+    "Searching & Filtering Data (grep, find, locate, awk, sed)",
+    "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)"
   ],
   "recent_questions": [
-    "Your CI/CD pipeline generates multiple build artifacts and logs in a directory called `build_artifacts/`. You need to identify the 3 largest build log files (named `build-*.log`) within this directory and display the last 20 lines of each of these top 3 files for a quick sanity check. How would you combine `ls`, `sort`, `head`, `awk`, and `xargs` to achieve this?",
-    "Explain the concept of file permissions in Linux using both octal and symbolic modes. Provide examples of how to grant read, write, and execute permissions to the owner, group, and others for a script file named `deploy.sh`.",
-    "Differentiate between `chown` and `chgrp`. Provide a scenario where a DevOps engineer would use both commands to manage ownership for an application's files and directories.",
-    "What is `umask` and how does it affect the default permissions of newly created files and directories? Provide an example of how a DevOps engineer might set a specific `umask` for security reasons.",
-    "Explain the purpose and usage of special permissions in Linux: SUID, SGID, and Sticky Bit. Provide a practical example for each.",
-    "You are deploying a sensitive configuration file, `/etc/myapp/config.yml`, which contains database credentials. Describe the `chmod` and `chown` commands you would use to secure this file, ensuring only the `root` user can read/write it and no one else has any access. Why is this important from a security perspective?",
-    "You have a directory `/data/backups` that should be accessible by all users in the `backup_admins` group for read/write operations, but no one else should have any access. New files created in this directory should also inherit the `backup_admins` group. Outline the commands to achieve this, explaining each step.",
     "Explain how directory permissions differ from file permissions. Specifically, what does the 'execute' permission mean for a directory compared to a file? Provide an example where incorrect directory permissions prevent access to a file, even if the file itself has correct permissions.",
     "Explain the primary differences between `useradd` and `adduser` commands in Linux. Which one is generally recommended for DevOps engineers and why?",
     "A DevOps team needs to onboard a new engineer, 'alice'. Create a user `alice` with a home directory at `/home/devops_users/alice`, a default shell of `/bin/bash`, and add her to two existing secondary groups: `developers` and `operations`. Provide the command(s) and explain each part.",
@@ -83,6 +76,13 @@
     "You're deploying a new version of an application and need to update its configuration file, `config.ini`. Specifically, you need to change the `DEBUG_MODE` setting from `True` to `False` and uncomment a line that starts with `#LOG_LEVEL=INFO` by removing the leading hash. How would you use `sed` to perform these two operations directly on the file?",
     "Explain the difference between `find` and `locate`. When would you choose one over the other for a specific task?",
     "You need to identify all executable shell scripts (files ending with `.sh` and having execute permissions) within your current working directory and its subdirectories. For each script found, you want to display its name and then execute it. How would you combine `find` with the `exec` option to achieve this?",
-    "You are analyzing a large web server access log, `access.log`. You need to extract all unique IP addresses that accessed the server, excluding any requests from local loopback (127.0.0.1). The IP address is always the first field in the log line, separated by a space. How would you combine `awk` and `sort -u` to get this list?"
+    "You are analyzing a large web server access log, `access.log`. You need to extract all unique IP addresses that accessed the server, excluding any requests from local loopback (127.0.0.1). The IP address is always the first field in the log line, separated by a space. How would you combine `awk` and `sort -u` to get this list?",
+    "How would you create a compressed archive of a directory named `/opt/myapp_logs` using `tar` and `gzip`, ensuring that the original file permissions and ownership are preserved? Specify the command and explain the key flags.",
+    "You've received an archive file named `backup.tar.gz` from a vendor, which needs to be extracted into a specific directory `/var/data/vendor_backups`. How would you extract its contents to this location, and what steps would you take to verify the integrity of the extracted files (e.g., checking for corruption during transfer)?",
+    "Explain the fundamental differences between `gzip` and `zip` in terms of their primary use cases, how they handle multiple files/directories, and their typical output formats. When would a DevOps engineer prefer one over the other?",
+    "A critical application generates daily reports in `/var/reports/daily`. You need to automate a task to compress all `.csv` files older than 7 days in this directory using `gzip`, but only if the user `report_admin` owns them. After compression, the original `.csv` files should be deleted. How would you achieve this?",
+    "You have a large log file, `access.log`, that you need to compress without modifying the original file, but you also want to create a new compressed file that is only readable by the `log_analyst` group. Describe the commands to achieve this, including setting appropriate permissions on the compressed file.",
+    "Imagine you need to create a `zip` archive of a directory `/app/config` and its contents. However, you want to exclude all files with a `.tmp` extension and any subdirectory named `cache`. How would you use the `zip` command to achieve this, and how would you list the contents of the created `zip` archive without extracting it?",
+    "You are tasked with transferring a directory `/data/backups` containing sensitive configuration files to a remote server. Before transferring, you need to create a single, compressed archive (`tar.gz`) of this directory. During the archival process, you want to ensure that specific sensitive files (e.g., `credentials.txt`, `api_keys.conf`) are *excluded* from the archive. How would you construct the `tar` command to achieve this exclusion, and what is a common way to verify the contents of the archive before transfer?"
   ]
 }
