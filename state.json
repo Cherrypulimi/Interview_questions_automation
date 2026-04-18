@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Environment Variables (export, env, printenv)",
     "Linux Shell Basics (Bash shell, command history, aliases)",
     "Bash Shell Scripting Fundamentals (variables, loops, conditions)",
     "Advanced Shell Scripting (functions, arguments, exit codes)",
@@ -31,16 +30,10 @@
     "Linux Networking Commands (ping, netstat, ss, traceroute, curl, wget)",
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
     "Searching & Filtering Data (grep, find, locate, awk, sed)",
-    "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)"
+    "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)",
+    "Linux Environment Variables (export, env, printenv)"
   ],
   "recent_questions": [
-    "Explain how directory permissions differ from file permissions. Specifically, what does the 'execute' permission mean for a directory compared to a file? Provide an example where incorrect directory permissions prevent access to a file, even if the file itself has correct permissions.",
-    "Explain the primary differences between `useradd` and `adduser` commands in Linux. Which one is generally recommended for DevOps engineers and why?",
-    "A DevOps team needs to onboard a new engineer, 'alice'. Create a user `alice` with a home directory at `/home/devops_users/alice`, a default shell of `/bin/bash`, and add her to two existing secondary groups: `developers` and `operations`. Provide the command(s) and explain each part.",
-    "The user `alice` (from the previous question) has been promoted and now needs her username changed to `alicia`, her home directory moved to `/home/sre_users/alicia`, and her primary group changed to `sre`. Additionally, she should be removed from the `developers` group but remain in `operations`. How would you achieve this using `usermod`?",
-    "Your team needs a new shared directory for project files. Create a new group named `project_alpha`, then create a directory `/opt/project_alpha_data`. Ensure that only members of `project_alpha` can read, write, and execute (traverse) within this directory, and that any new files or subdirectories created within `/opt/project_alpha_data` automatically inherit the `project_alpha` group ownership.",
-    "After creating a new user `bob` for a temporary task, you need to set a password for him, ensure it expires after 30 days, and force him to change it on his first login. How would you accomplish this using `passwd` and other related commands?",
-    "A contractor, `charlie`, has completed his assignment. You need to remove his user account and his primary group `charlie_group` from the system. Explain the commands and the considerations you should take regarding his home directory and any files he might own.",
     "A third-party vendor needs temporary SSH access to a server to troubleshoot a specific application issue. You decide to create a new user `vendor_support` with a restricted shell (`/bin/rbash`) and add them to a temporary group `app_troubleshooters`. This group should also have read-only access to `/var/log/myapp/` and full read/write access to `/tmp/vendor_work/` (which doesn't exist yet). Outline the steps, including user/group creation, directory setup, and permissions. After the troubleshooting, how would you quickly revoke their access?",
     "How do you list all processes running on a system, display them in a hierarchical format, and filter for processes owned by a specific user or associated with a particular application?",
     "Compare and contrast `top` and `htop` for real-time process monitoring. When would you choose one over the other, and what are some key features unique to `htop` that enhance a DevOps engineer's workflow?",
@@ -83,6 +76,13 @@
     "A critical application generates daily reports in `/var/reports/daily`. You need to automate a task to compress all `.csv` files older than 7 days in this directory using `gzip`, but only if the user `report_admin` owns them. After compression, the original `.csv` files should be deleted. How would you achieve this?",
     "You have a large log file, `access.log`, that you need to compress without modifying the original file, but you also want to create a new compressed file that is only readable by the `log_analyst` group. Describe the commands to achieve this, including setting appropriate permissions on the compressed file.",
     "Imagine you need to create a `zip` archive of a directory `/app/config` and its contents. However, you want to exclude all files with a `.tmp` extension and any subdirectory named `cache`. How would you use the `zip` command to achieve this, and how would you list the contents of the created `zip` archive without extracting it?",
-    "You are tasked with transferring a directory `/data/backups` containing sensitive configuration files to a remote server. Before transferring, you need to create a single, compressed archive (`tar.gz`) of this directory. During the archival process, you want to ensure that specific sensitive files (e.g., `credentials.txt`, `api_keys.conf`) are *excluded* from the archive. How would you construct the `tar` command to achieve this exclusion, and what is a common way to verify the contents of the archive before transfer?"
+    "You are tasked with transferring a directory `/data/backups` containing sensitive configuration files to a remote server. Before transferring, you need to create a single, compressed archive (`tar.gz`) of this directory. During the archival process, you want to ensure that specific sensitive files (e.g., `credentials.txt`, `api_keys.conf`) are *excluded* from the archive. How would you construct the `tar` command to achieve this exclusion, and what is a common way to verify the contents of the archive before transfer?",
+    "Explain the fundamental differences between `env`, `printenv`, and `export` commands in Linux. When would you use each, and what kind of variables do they display or manage?",
+    "How do you set a *temporary* environment variable versus a *persistent* one in Linux? Explain the scope of an exported variable, particularly how it affects parent and child processes.",
+    "The `PATH` environment variable is critical for finding executables. Explain its significance. How would you temporarily add a new directory to your `PATH` for the current session, and how would you make this addition permanent for future sessions?",
+    "You're writing a shell script that needs to store temporary compressed archives in a specific directory. This directory might vary across different deployment environments (e.g., dev, staging, prod). How would you use an environment variable to make your script flexible and easily configurable without modifying the script's code? Demonstrate with a simple script example involving `tar`.",
+    "Describe how to remove an environment variable from the current shell session. Additionally, if a variable is defined in multiple configuration files (e.g., `/etc/profile`, `~/.bashrc`, or on the command line), which definition takes precedence and why?",
+    "From a security perspective, when might it be inappropriate or insecure to store sensitive information (like API keys, database credentials, or private tokens) directly in environment variables, especially in configuration files like `.bashrc`? What are safer and more recommended alternatives in a DevOps context?",
+    "You need to create a daily `tar.gz` archive of the `/var/log/app` directory. The desired `gzip` compression level should be configurable via an environment variable named `COMPRESSION_LEVEL`. Write a simple shell script that utilizes this environment variable to control the compression level when creating the archive."
   ]
 }
