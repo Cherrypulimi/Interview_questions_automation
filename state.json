@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Shell Basics (Bash shell, command history, aliases)",
     "Bash Shell Scripting Fundamentals (variables, loops, conditions)",
     "Advanced Shell Scripting (functions, arguments, exit codes)",
     "Cron Jobs & Task Scheduling (crontab, at, system timers)",
@@ -31,16 +30,10 @@
     "Disk Management in Linux (df, du, fdisk, lsblk, mount, umount)",
     "Searching & Filtering Data (grep, find, locate, awk, sed)",
     "Linux Compression & Archiving (tar, gzip, gunzip, zip, unzip)",
-    "Linux Environment Variables (export, env, printenv)"
+    "Linux Environment Variables (export, env, printenv)",
+    "Linux Shell Basics (Bash shell, command history, aliases)"
   ],
   "recent_questions": [
-    "A third-party vendor needs temporary SSH access to a server to troubleshoot a specific application issue. You decide to create a new user `vendor_support` with a restricted shell (`/bin/rbash`) and add them to a temporary group `app_troubleshooters`. This group should also have read-only access to `/var/log/myapp/` and full read/write access to `/tmp/vendor_work/` (which doesn't exist yet). Outline the steps, including user/group creation, directory setup, and permissions. After the troubleshooting, how would you quickly revoke their access?",
-    "How do you list all processes running on a system, display them in a hierarchical format, and filter for processes owned by a specific user or associated with a particular application?",
-    "Compare and contrast `top` and `htop` for real-time process monitoring. When would you choose one over the other, and what are some key features unique to `htop` that enhance a DevOps engineer's workflow?",
-    "Explain the concept of process signals and their role in terminating processes gracefully or forcefully. Provide examples of common signals (SIGTERM, SIGKILL, SIGHUP) and demonstrate how to use `kill` and `pkill` to manage processes, including targeting processes by name.",
-    "As a DevOps engineer, you encounter a long-running batch job that is consuming excessive CPU resources, impacting other critical services. How would you use `nice` and `renice` to adjust its scheduling priority without stopping the job, and what are the implications of changing a process's nice value?",
-    "You need to run a script that takes a long time to complete, but you also need to use your terminal for other tasks. How would you run this script in the background, bring it back to the foreground if needed, and what command would you use to list all backgrounded jobs in your current session?",
-    "Explain what zombie and orphan processes are, why they occur, and their potential impact on a system. How would a DevOps engineer identify and address these types of processes?",
     "You've deployed a new application that runs as a daemon. How would you ensure this application consistently runs under a dedicated, non-root user (e.g., `appuser`) for security reasons, and how would you verify its process ownership and status using command-line tools?",
     "Differentiate between `apt`, `apt-get`, `yum`, and `dnf` in terms of their primary functions, target distributions, and key advantages or use cases for a DevOps engineer.",
     "As a DevOps engineer, you've inherited a server and need to determine which package owns the `/usr/bin/kubectl` executable and which version is installed. How would you accomplish this on both a Debian-based system (e.g., Ubuntu) and a Red Hat-based system (e.g., CentOS/RHEL)?",
@@ -83,6 +76,13 @@
     "You're writing a shell script that needs to store temporary compressed archives in a specific directory. This directory might vary across different deployment environments (e.g., dev, staging, prod). How would you use an environment variable to make your script flexible and easily configurable without modifying the script's code? Demonstrate with a simple script example involving `tar`.",
     "Describe how to remove an environment variable from the current shell session. Additionally, if a variable is defined in multiple configuration files (e.g., `/etc/profile`, `~/.bashrc`, or on the command line), which definition takes precedence and why?",
     "From a security perspective, when might it be inappropriate or insecure to store sensitive information (like API keys, database credentials, or private tokens) directly in environment variables, especially in configuration files like `.bashrc`? What are safer and more recommended alternatives in a DevOps context?",
-    "You need to create a daily `tar.gz` archive of the `/var/log/app` directory. The desired `gzip` compression level should be configurable via an environment variable named `COMPRESSION_LEVEL`. Write a simple shell script that utilizes this environment variable to control the compression level when creating the archive."
+    "You need to create a daily `tar.gz` archive of the `/var/log/app` directory. The desired `gzip` compression level should be configurable via an environment variable named `COMPRESSION_LEVEL`. Write a simple shell script that utilizes this environment variable to control the compression level when creating the archive.",
+    "How can you efficiently search, recall, and re-execute previous commands from your Bash history, especially when dealing with a long history file?",
+    "You frequently type a long command like `ls -lha --color=auto`. How can you create a permanent shortcut (alias) for this command to save time, and where would you typically define it so it's available in future shell sessions?",
+    "Explain the primary differences and typical use cases for `~/.bashrc`, `~/.bash_profile`, and `/etc/profile` in a Bash environment. When would you put a command or variable definition in one versus the other?",
+    "You have several log files in a directory: `app_20231001.log`, `app_20231002.log`, `nginx_access.log`, `error.log`. Demonstrate how to use shell wildcards to:\n    1.  List all files ending with `.log`.\n    2.  Copy all `app_*.log` files to a `/tmp/backup` directory.\n    3.  Delete all files starting with `nginx_`.",
+    "You need to create a directory named with today's date (e.g., `backup_2023-10-27`). How would you use command substitution to achieve this in a single command, and then list its contents to verify?",
+    "Explain the practical differences between single quotes (`'...'`), double quotes (`\"...\"`), and backticks (``` `...` ``` or `$(...)`) in Bash, especially concerning variable expansion and command substitution. Provide examples where using the wrong type of quote would lead to unexpected behavior.",
+    "You're troubleshooting an application that writes logs to `/var/log/myapp` and stores configuration in `/etc/myapp`. You also have user-specific scripts in your home directory `~`.\n    1.  Describe the significance of `/var` and `/etc` in the Linux file system hierarchy for this scenario.\n    2.  From your home directory, how would you navigate to `/var/log/myapp` using an *absolute path* and then back to `/etc/myapp` using a *relative path*?"
   ]
 }
