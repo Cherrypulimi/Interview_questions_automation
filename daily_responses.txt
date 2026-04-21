@@ -2874,3 +2874,389 @@ cd ../../etc/myapp
         *   From `/var`, we then specify the path `etc/myapp` to reach the configuration directory.
 
 
+--- Date: 2026-04-21 05:39:47 ---
+Topic: Bash Shell Scripting Fundamentals (variables, loops, conditions)
+Description: Mastering Bash scripting is a cornerstone for any DevOps, Cloud, or Site Reliability Engineer. It's crucial for automating tasks, managing systems, and building robust CI/CD pipelines. Swipe through these 7 essential interview questions covering Bash variables, loops, and conditions to solidify your foundational knowledge and ace your next technical interview! #DevOps #Linux #BashScripting #InterviewPrep #DataEngineering
+
+Q1: Write a Bash script that takes a filename as its first argument. The script should check if the file exists and is a regular file. If it exists, print its absolute path, size in bytes, and modification timestamp. If it does not exist or is not a regular file, print an error message and exit with a non-zero status.
+Solution: This script demonstrates conditional checks (`-f`, `-e`), accessing script arguments (`$1`), using `stat` for file metadata, and setting exit statuses.
+
+*   Script Logic:
+    1.  Check if an argument is provided. If not, print usage and exit.
+    2.  Use `if [ -f "$1" ]` to verify if the argument points to an existing regular file.
+    3.  If the file exists and is regular, use `readlink -f "$1"` for the absolute path and `stat -c` to extract size and modification time.
+    4.  Print the collected information.
+    5.  If the file doesn't exist or isn't regular, print an error and `exit 1`.
+
+```bash
+#!/bin/bash
+
+# Check if a filename argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <filename>"
+  exit 1
+fi
+
+FILENAME="$1"
+
+# Check if the file exists and is a regular file
+if [ -f "$FILENAME" ]; then
+  ABSOLUTE_PATH=$(readlink -f "$FILENAME")
+  FILE_SIZE=$(stat -c %s "$FILENAME") # Size in bytes
+  MOD_TIMESTAMP=$(stat -c %y "$FILENAME") # Modification timestamp
+
+  echo "File: $FILENAME"
+  echo "Absolute Path: $ABSOLUTE_PATH"
+  echo "Size: $FILE_SIZE bytes"
+  echo "Last Modified: $MOD_TIMESTAMP"
+  exit 0 # Success
+else
+  echo "Error: File '$FILENAME' does not exist or is not a regular file."
+  exit 1 # Failure
+fi
+```
+
+*   Explanation of `stat -c` format specifiers:
+    *   `%s`: Total size in bytes.
+    *   `%y`: Last modification time, human-readable.
+*   `readlink -f`: Resolves symbolic links and returns the canonical (absolute) path.
+*   Exit Status: `exit 0` indicates successful execution, while `exit 1` (or any non-zero value) indicates an error.
+
+Q2: You have a directory `/app/data` containing various log files, some of which might be large. Write a Bash script that iterates through all files in `/app/data` (not subdirectories). For each file, if it's a regular file, the script should check its size. If the file size is greater than 10MB, it should print the filename and its size, then append a line "--- LARGE FILE ---" to the end of that file.
+Solution: This script utilizes a `for` loop to iterate over files, an `if` condition to check file type and size, and shell redirection to append text.
+
+*   Script Logic:
+    1.  Define the target directory.
+    2.  Use a `for` loop with a wildcard (`*`) to iterate over files directly within the directory.
+    3.  Inside the loop, check if the current item is a regular file using `[ -f "$file" ]`.
+    4.  Get the file size in bytes using `stat -c %s`.
+    5.  Convert the size to MB for comparison. Use an `if` condition to check if it exceeds 10MB.
+    6.  If it's a large file, print details and append the marker string.
+
+```bash
+#!/bin/bash
+
+TARGET_DIR="/app/data"
+MAX_SIZE_MB=10
+
+# Create a dummy directory and files for demonstration
+mkdir -p "$TARGET_DIR"
+# Create a small file
+echo "This is a small file." > "$TARGET_DIR/small.log"
+# Create a large file (approx 15MB)
+head -c 15M /dev/urandom > "$TARGET_DIR/large.log"
+# Create another small file
+echo "Another small one." > "$TARGET_DIR/another_small.log"
+
+echo "Processing files in $TARGET_DIR..."
+
+# Loop through each item in the target directory
+for file in "$TARGET_DIR"/*;
+do
+  # Check if it's a regular file
+  if [ -f "$file" ]; then
+    FILENAME=$(basename "$file")
+    FILE_SIZE_BYTES=$(stat -c %s "$file")
+    FILE_SIZE_MB=$((FILE_SIZE_BYTES / (1024 * 1024)))
+
+    if [ "$FILE_SIZE_MB" -gt "$MAX_SIZE_MB" ]; then
+      echo "Found large file: $FILENAME (Size: ${FILE_SIZE_MB}MB)"
+      echo "--- LARGE FILE ---" >> "$file"
+      echo "  - Appended marker to $FILENAME"
+    else
+      echo "Skipping small file: $FILENAME (Size: ${FILE_SIZE_MB}MB)"
+    fi
+  fi
+done
+
+echo "\nProcessing complete."
+# Clean up dummy files (optional)
+# rm -rf "$TARGET_DIR"
+```
+
+*   Size Comparison: The script calculates file size in MB by dividing bytes by `(1024 * 1024)`. The `if [ "$FILE_SIZE_MB" -gt "$MAX_SIZE_MB" ]` performs an arithmetic comparison.
+*   Appending Text: `echo "--- LARGE FILE ---" >> "$file"` appends the string to the end of the file, preserving existing content.
+
+Q3: Write a Bash script that prompts the user to enter a positive integer. The script should repeatedly prompt until a valid positive integer is entered. Once a valid number `N` is received, the script should calculate and print the sum of all integers from 1 to `N`.
+Solution: This script demonstrates a `while` loop for input validation and arithmetic operations within Bash.
+
+*   Script Logic:
+    1.  Initialize `sum` to 0 and `N` to an invalid value.
+    2.  Enter a `while` loop that continues as long as `N` is not a positive integer.
+        *   Inside the loop, prompt the user for input using `read -p`.
+        *   Use a regular expression `[[ $N =~ ^[0-9]+$ ]]` to check if `N` consists only of digits.
+        *   Use an arithmetic comparison `(( N > 0 ))` to ensure it's positive.
+    3.  Once a valid `N` is obtained, use a `for` loop to iterate from 1 to `N`.
+    4.  Accumulate the sum using `(( sum+=i ))`.
+    5.  Print the final sum.
+
+```bash
+#!/bin/bash
+
+N=-1 # Initialize N to an invalid value to enter the loop
+SUM=0 # Initialize sum
+
+# Loop until a valid positive integer is entered
+while true;
+do
+  read -p "Please enter a positive integer (N): " N
+
+  # Check if N is an integer and positive
+  if [[ "$N" =~ ^[0-9]+$ ]] && (( N > 0 )); then
+    echo "Valid input: N = $N"
+    break # Exit the loop if input is valid
+  else
+    echo "Invalid input. Please enter a positive integer."
+  fi
+done
+
+# Calculate the sum from 1 to N
+for (( i=1; i<=N; i++ ));
+do
+  (( SUM+=i )) # Arithmetic expansion for sum
+done
+
+echo "The sum of integers from 1 to $N is: $SUM"
+```
+
+*   Input Validation: The `while true` loop combined with `break` and the `if` condition using `[[ $N =~ ^[0-9]+$ ]]` (regex for digits) and `(( N > 0 ))` (arithmetic comparison for positive) ensures robust input.
+*   Arithmetic Expansion: `(( SUM+=i ))` is Bash's arithmetic expansion, which is efficient for integer calculations. `for (( i=1; i<=N; i++ ))` is a C-style `for` loop common for numerical iteration.
+
+Q4: Explain the concept of local and global variables within Bash functions. Provide a script example demonstrating how to declare a local variable within a function and show its scope, contrasting it with a global variable modified within the same function.
+Solution: In Bash, variables are global by default. This means a variable declared outside a function is accessible inside it, and a variable declared inside a function (without `local`) is accessible outside it. The `local` keyword explicitly defines a variable's scope to within the function it's declared in, preventing it from affecting variables of the same name outside the function.
+
+*   Global Variables:
+    *   Declared outside any function or inside a function without `local`.
+    *   Accessible and modifiable from anywhere in the script, including within functions.
+    *   Changes made to a global variable inside a function will persist outside the function.
+
+*   Local Variables:
+    *   Declared inside a function using the `local` keyword (e.g., `local my_var="value"`).
+    *   Their scope is limited to the function where they are defined and its child functions.
+    *   They 'hide' (shadow) any global variables with the same name within that function's scope, but do not modify the global variable itself.
+
+```bash
+#!/bin/bash
+
+# Global variable
+GLOBAL_VAR="I am global (initial)"
+
+function demonstrate_scope() {
+  echo "\n--- Inside demonstrate_scope function ---"
+
+  # Accessing the global variable
+  echo "1. Inside function, before modification: GLOBAL_VAR = $GLOBAL_VAR"
+
+  # Modifying the global variable (no 'local' keyword)
+  GLOBAL_VAR="I am global (modified by function)"
+  echo "2. Inside function, after modifying GLOBAL_VAR: GLOBAL_VAR = $GLOBAL_VAR"
+
+  # Declaring a local variable with the same name as a global one
+  local GLOBAL_VAR="I am local to the function"
+  echo "3. Inside function, after declaring local GLOBAL_VAR: GLOBAL_VAR = $GLOBAL_VAR"
+
+  # Declaring another local variable
+  local LOCAL_ONLY_VAR="I only exist in this function"
+  echo "4. Inside function, LOCAL_ONLY_VAR = $LOCAL_ONLY_VAR"
+}
+
+# --- Main script execution ---
+
+echo "--- Before function call ---"
+echo "GLOBAL_VAR = $GLOBAL_VAR"
+
+demonstrate_scope # Call the function
+
+echo "\n--- After function call ---"
+echo "GLOBAL_VAR = $GLOBAL_VAR" # Shows the modified global value
+
+# Attempt to access the local variable outside the function
+echo "Attempting to access LOCAL_ONLY_VAR outside function..."
+echo "LOCAL_ONLY_VAR = $LOCAL_ONLY_VAR" # This will be empty or an error if strict mode is on
+```
+
+*   Output Analysis: The output clearly shows `GLOBAL_VAR` retaining its modification from inside the function, while the `local GLOBAL_VAR` within the function only temporarily shadowed it. `LOCAL_ONLY_VAR` is empty outside the function, proving its local scope.
+
+Q5: You are setting up a cron job to perform routine system health checks. Write a Bash script that uses a `case` statement to process a single command-line argument. The script should:
+*   If the argument is `status`, print "Checking system status..."
+*   If the argument is `reboot`, print "Initiating system reboot..." (and simulate reboot with `echo`)
+*   If the argument is `backup`, print "Starting data backup..." (and simulate backup with `echo`)
+*   For any other argument or no argument, print an error message: "Usage: health_check.sh {status|reboot|backup}" and exit with a non-zero status.
+Solution: This script demonstrates robust argument handling using the `case` statement, which is ideal for multi-choice conditions based on a single variable.
+
+*   Script Logic:
+    1.  Check if an argument is provided using `if [ -z "$1" ]`. If not, print usage and exit.
+    2.  Use a `case "$1" in ... esac` block to match the provided argument against predefined patterns.
+    3.  Each case (`status`, `reboot`, `backup`) executes specific commands.
+    4.  The `*)` pattern acts as a default for any unmatched arguments, printing an error and exiting.
+    5.  `exit 0` for successful operations, `exit 1` for errors.
+
+```bash
+#!/bin/bash
+
+# Check if an argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 {status|reboot|backup}"
+  exit 1
+fi
+
+# Use a case statement to handle different commands
+case "$1" in
+  status)
+    echo "Checking system status..."
+    # Add actual status check commands here, e.g., uptime, free -h, etc.
+    uptime
+    free -h
+    ;; # End of 'status' case
+
+  reboot)
+    echo "Initiating system reboot..."
+    # In a real scenario, this would be 'sudo reboot'
+    echo "(Simulating reboot command)"
+    ;; # End of 'reboot' case
+
+  backup)
+    echo "Starting data backup..."
+    # In a real scenario, this would be your backup command, e.g., tar or rsync
+    echo "(Simulating backup command)"
+    ;; # End of 'backup' case
+
+  *)
+    echo "Error: Invalid command '$1'."
+    echo "Usage: $0 {status|reboot|backup}"
+    exit 1 # Exit with error for invalid command
+    ;;
+
+esac
+
+exit 0 # Exit successfully if a valid command was processed
+```
+
+*   `case` Statement: Provides a clean and readable way to handle multiple conditional paths based on the value of a single variable. Each pattern is terminated by `)`. The commands for each case are terminated by `;;`.
+*   Default Case: The `*)` pattern catches any input not explicitly matched by previous patterns, serving as a robust error handler.
+
+Q6: You need to process a list of hostnames from a file named `hosts.txt`. Write a Bash script that reads each hostname from `hosts.txt` line by line. For each hostname, the script should attempt to `ping` it once. If the `ping` is successful, print "[hostname] is reachable."; otherwise, print "[hostname] is unreachable.". The script should also handle the case where `hosts.txt` does not exist.
+Solution: This script demonstrates reading a file line by line using a `while` loop, performing a command, and checking its exit status (`$?`) for conditional output.
+
+*   Script Logic:
+    1.  Define the `HOSTS_FILE` variable.
+    2.  Check if `hosts.txt` exists using `[ -f "$HOSTS_FILE" ]`. If not, print an error and exit.
+    3.  Use `while IFS= read -r hostname; do ... done < "$HOSTS_FILE"` to read the file line by line, preventing issues with spaces or backslashes.
+    4.  Inside the loop, `ping -c 1 "$hostname" > /dev/null 2>&1` attempts to ping once, redirecting all output to `/dev/null` to keep the console clean.
+    5.  Check the `ping` command's exit status (`$?`). `0` indicates success, non-zero indicates failure.
+    6.  Print the appropriate message based on reachability.
+
+```bash
+#!/bin/bash
+
+HOSTS_FILE="hosts.txt"
+
+# Create a dummy hosts.txt for demonstration
+cat << EOF > "$HOSTS_FILE"
+localhost
+example.com
+nonexistent-host-123.local
+google.com
+EOF
+
+# Check if the hosts file exists
+if [ ! -f "$HOSTS_FILE" ]; then
+  echo "Error: Hosts file '$HOSTS_FILE' not found."
+  exit 1
+fi
+
+echo "Checking host reachability from '$HOSTS_FILE':\n"
+
+# Read the hosts file line by line
+while IFS= read -r HOSTNAME;
+do
+  # Skip empty lines
+  if [ -z "$HOSTNAME" ]; then
+    continue
+  fi
+
+  echo -n "Pinging $HOSTNAME... "
+  # Ping the host once, suppress output, and check exit status
+  if ping -c 1 "$HOSTNAME" > /dev/null 2>&1; then
+    echo "reachable."
+  else
+    echo "unreachable."
+  fi
+done < "$HOSTS_FILE"
+
+echo "\nHost reachability check complete."
+
+# Clean up dummy file (optional)
+# rm -f "$HOSTS_FILE"
+```
+
+*   `while IFS= read -r`: This is the standard robust way to read a file line by line in Bash. `IFS=` prevents leading/trailing whitespace trimming, and `-r` prevents backslash escapes from being interpreted.
+*   `ping -c 1`: Sends only one ICMP echo request.
+*   `> /dev/null 2>&1`: Redirects standard output (`> /dev/null`) and standard error (`2>&1`) to `/dev/null`, effectively silencing the command's output.
+*   `if command; then ... fi`: This syntax directly checks the exit status of `command`. If `command` exits with `0`, the `then` block is executed. If it exits with non-zero, the `else` (if present) is executed.
+
+Q7: You need to create a `zip` archive of a directory `/app/config` and its contents. However, you want to exclude all files with a `.tmp` extension and any subdirectory named `cache`. Write a Bash script that performs this archiving. The script should also verify the contents of the created `zip` archive without extracting it, to ensure the exclusions worked.
+Solution: This script combines Bash scripting fundamentals with the `zip` utility, specifically demonstrating how to use its exclusion options and then verify the archive contents.
+
+*   Script Logic:
+    1.  Define source directory, destination archive name, and exclusion patterns.
+    2.  Create a dummy source directory and files for demonstration, including `.tmp` files and `cache` subdirectories.
+    3.  Use the `zip` command with `-r` for recursion, `-x` for file exclusions, and `-x "*/cache/*"` for directory exclusions.
+    4.  Check the `zip` command's exit status. If successful, print a success message.
+    5.  Use `unzip -l` to list the contents of the created archive without extracting it, allowing verification of exclusions.
+
+```bash
+#!/bin/bash
+
+SOURCE_DIR="/app/config"
+ARCHIVE_NAME="/tmp/config_backup.zip"
+
+# --- Create dummy data for demonstration ---
+mkdir -p "$SOURCE_DIR/subdir1"
+mkdir -p "$SOURCE_DIR/cache"
+mkdir -p "$SOURCE_DIR/subdir2/cache"
+
+echo "config_main.conf" > "$SOURCE_DIR/config_main.conf"
+echo "temp_data.tmp" > "$SOURCE_DIR/temp_data.tmp"
+echo "settings.ini" > "$SOURCE_DIR/subdir1/settings.ini"
+echo "log.tmp" > "$SOURCE_DIR/subdir1/log.tmp"
+echo "cached_item.data" > "$SOURCE_DIR/cache/cached_item.data"
+echo "another_cached_item.data" > "$SOURCE_DIR/subdir2/cache/another_cached_item.data"
+
+echo "Created dummy source directory: $SOURCE_DIR"
+ls -RF "$SOURCE_DIR"
+echo "------------------------------------"
+
+# --- Create the zip archive with exclusions ---
+echo "Creating zip archive '$ARCHIVE_NAME' with exclusions..."
+
+# -r: recurse into directories
+# -x "*.tmp": exclude files ending with .tmp
+# -x "*/cache/*": exclude any 'cache' directory and its contents
+if zip -r "$ARCHIVE_NAME" "$SOURCE_DIR" -x "*.tmp" -x "*/cache/*" > /dev/null;
+then
+  echo "Successfully created archive: $ARCHIVE_NAME"
+else
+  echo "Error: Failed to create zip archive."
+  rm -f "$ARCHIVE_NAME" # Clean up potentially corrupted archive
+  exit 1
+fi
+
+# --- Verify the contents of the archive ---
+echo "\nVerifying contents of '$ARCHIVE_NAME' (listing without extraction):"
+unzip -l "$ARCHIVE_NAME"
+
+echo "\nVerification complete. Check the list above for excluded files/directories."
+
+# --- Clean up dummy data (optional) ---
+# rm -rf "$SOURCE_DIR"
+# rm -f "$ARCHIVE_NAME"
+```
+
+*   `zip` Command:
+    *   `zip -r`: Recursively includes the contents of directories.
+    *   `-x "*.tmp"`: Excludes any file ending with `.tmp` from the archive.
+    *   `-x "*/cache/*"`: Excludes any directory named `cache` (at any level) and all its contents. The `*` before and after `/cache/` is crucial for matching.
+*   `unzip -l`: This command lists the contents of a `.zip` archive without performing the actual extraction. It's an excellent way to quickly verify what's inside an archive, especially to confirm exclusions.
+
+
