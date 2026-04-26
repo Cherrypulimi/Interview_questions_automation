@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Services Management (systemctl, service, systemd)",
     "SSH & Remote Access (ssh, scp, sftp, key-based authentication)",
     "Linux Networking Configuration (IP, DNS, hostname, routing)",
     "Linux Security Basics (firewalld, iptables, SELinux basics)",
@@ -31,16 +30,10 @@
     "Bash Shell Scripting Fundamentals (variables, loops, conditions)",
     "Advanced Shell Scripting (functions, arguments, exit codes)",
     "Cron Jobs & Task Scheduling (crontab, at, system timers)",
-    "System Logs & Monitoring (journalctl, /var/log, dmesg)"
+    "System Logs & Monitoring (journalctl, /var/log, dmesg)",
+    "Linux Services Management (systemctl, service, systemd)"
   ],
   "recent_questions": [
-    "You are analyzing a large web server access log, `access.log`. You need to extract all unique IP addresses that accessed the server, excluding any requests from local loopback (127.0.0.1). The IP address is always the first field in the log line, separated by a space. How would you combine `awk` and `sort -u` to get this list?",
-    "How would you create a compressed archive of a directory named `/opt/myapp_logs` using `tar` and `gzip`, ensuring that the original file permissions and ownership are preserved? Specify the command and explain the key flags.",
-    "You've received an archive file named `backup.tar.gz` from a vendor, which needs to be extracted into a specific directory `/var/data/vendor_backups`. How would you extract its contents to this location, and what steps would you take to verify the integrity of the extracted files (e.g., checking for corruption during transfer)?",
-    "Explain the fundamental differences between `gzip` and `zip` in terms of their primary use cases, how they handle multiple files/directories, and their typical output formats. When would a DevOps engineer prefer one over the other?",
-    "A critical application generates daily reports in `/var/reports/daily`. You need to automate a task to compress all `.csv` files older than 7 days in this directory using `gzip`, but only if the user `report_admin` owns them. After compression, the original `.csv` files should be deleted. How would you achieve this?",
-    "You have a large log file, `access.log`, that you need to compress without modifying the original file, but you also want to create a new compressed file that is only readable by the `log_analyst` group. Describe the commands to achieve this, including setting appropriate permissions on the compressed file.",
-    "Imagine you need to create a `zip` archive of a directory `/app/config` and its contents. However, you want to exclude all files with a `.tmp` extension and any subdirectory named `cache`. How would you use the `zip` command to achieve this, and how would you list the contents of the created `zip` archive without extracting it?",
     "You are tasked with transferring a directory `/data/backups` containing sensitive configuration files to a remote server. Before transferring, you need to create a single, compressed archive (`tar.gz`) of this directory. During the archival process, you want to ensure that specific sensitive files (e.g., `credentials.txt`, `api_keys.conf`) are *excluded* from the archive. How would you construct the `tar` command to achieve this exclusion, and what is a common way to verify the contents of the archive before transfer?",
     "Explain the fundamental differences between `env`, `printenv`, and `export` commands in Linux. When would you use each, and what kind of variables do they display or manage?",
     "How do you set a *temporary* environment variable versus a *persistent* one in Linux? Explain the scope of an exported variable, particularly how it affects parent and child processes.",
@@ -83,6 +76,13 @@
     "Log files can grow indefinitely, consuming disk space and making analysis difficult. Explain the purpose of `logrotate` and how it helps manage log files. Provide a conceptual `logrotate` configuration snippet for an application log file `/var/log/myapp/app.log` that should be rotated weekly, compressed, kept for 4 weeks, and the application service (`myapp.service`) should be restarted after rotation.",
     "A web application running on your server is intermittently failing to connect to an external API. You suspect network issues or DNS problems. How would you combine network diagnostic commands with log analysis to identify the root cause? Specifically, what `curl` or `ping` commands would you use, and what log files or `journalctl` entries would you check for relevant error messages?",
     "You need to investigate a series of failed SSH login attempts from a specific IP address (`192.168.1.100`) that occurred yesterday. How would you use `journalctl` to display only the relevant authentication logs for that specific day and IP address, and then output these logs in a machine-readable JSON format for further processing?",
-    "After a recent server reboot, you notice that a newly added network interface card (NIC) is not being detected. How would you use `dmesg` to diagnose if the kernel detected the hardware, if there were any driver-related errors during boot, or if the NIC was initialized correctly? What specific patterns or keywords would you search for?"
+    "After a recent server reboot, you notice that a newly added network interface card (NIC) is not being detected. How would you use `dmesg` to diagnose if the kernel detected the hardware, if there were any driver-related errors during boot, or if the NIC was initialized correctly? What specific patterns or keywords would you search for?",
+    "In a modern Linux environment, you'll encounter both `systemctl` and `service` commands for managing daemons. Explain the key differences between these two commands, their underlying systems, and when you might still use `service`.",
+    "Describe the structure and key sections of a `systemd` service unit file. Provide an example of a minimal `.service` file for a simple application.",
+    "You've just deployed a new web application service named `webapp.service`. Explain how to use `systemctl` to perform the following actions, and what each action achieves:\n1.  Start the service immediately.\n2.  Check the current status of the service.\n3.  Configure the service to start automatically on boot.\n4.  Prevent the service from starting, even if another enabled service requires it.\n5.  Force a reload of the service's configuration without restarting the application process.",
+    "Explain the concept of `systemd` targets and how they relate to the traditional SysVinit runlevels. Provide examples of common `systemd` targets and their equivalent runlevels.",
+    "You notice that a critical application service, `data-processor.service`, is in a `failed` state. Outline a step-by-step approach using `systemctl` and `journalctl` to diagnose the root cause of the failure.",
+    "You've written a Bash script (`/usr/local/bin/cleanup.sh`) that performs daily log cleanup. You want to run this script as a `systemd` service that starts automatically at boot and restarts if it fails. Create a `systemd` service unit file for this script, ensuring it runs as a non-root user (`cleanupuser`) and logs its output to `journalctl`.",
+    "In `systemd`, managing dependencies between services is crucial for ensuring proper startup order and functionality. Explain the purpose and practical differences between `Requires=`, `Wants=`, and `After=` directives within a `systemd` unit file. Provide a scenario where each would be most appropriate."
   ]
 }
