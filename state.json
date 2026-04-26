@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "SSH & Remote Access (ssh, scp, sftp, key-based authentication)",
     "Linux Networking Configuration (IP, DNS, hostname, routing)",
     "Linux Security Basics (firewalld, iptables, SELinux basics)",
     "Process & Resource Monitoring (top, vmstat, iostat, free)",
@@ -31,16 +30,10 @@
     "Advanced Shell Scripting (functions, arguments, exit codes)",
     "Cron Jobs & Task Scheduling (crontab, at, system timers)",
     "System Logs & Monitoring (journalctl, /var/log, dmesg)",
-    "Linux Services Management (systemctl, service, systemd)"
+    "Linux Services Management (systemctl, service, systemd)",
+    "SSH & Remote Access (ssh, scp, sftp, key-based authentication)"
   ],
   "recent_questions": [
-    "You are tasked with transferring a directory `/data/backups` containing sensitive configuration files to a remote server. Before transferring, you need to create a single, compressed archive (`tar.gz`) of this directory. During the archival process, you want to ensure that specific sensitive files (e.g., `credentials.txt`, `api_keys.conf`) are *excluded* from the archive. How would you construct the `tar` command to achieve this exclusion, and what is a common way to verify the contents of the archive before transfer?",
-    "Explain the fundamental differences between `env`, `printenv`, and `export` commands in Linux. When would you use each, and what kind of variables do they display or manage?",
-    "How do you set a *temporary* environment variable versus a *persistent* one in Linux? Explain the scope of an exported variable, particularly how it affects parent and child processes.",
-    "The `PATH` environment variable is critical for finding executables. Explain its significance. How would you temporarily add a new directory to your `PATH` for the current session, and how would you make this addition permanent for future sessions?",
-    "You're writing a shell script that needs to store temporary compressed archives in a specific directory. This directory might vary across different deployment environments (e.g., dev, staging, prod). How would you use an environment variable to make your script flexible and easily configurable without modifying the script's code? Demonstrate with a simple script example involving `tar`.",
-    "Describe how to remove an environment variable from the current shell session. Additionally, if a variable is defined in multiple configuration files (e.g., `/etc/profile`, `~/.bashrc`, or on the command line), which definition takes precedence and why?",
-    "From a security perspective, when might it be inappropriate or insecure to store sensitive information (like API keys, database credentials, or private tokens) directly in environment variables, especially in configuration files like `.bashrc`? What are safer and more recommended alternatives in a DevOps context?",
     "You need to create a daily `tar.gz` archive of the `/var/log/app` directory. The desired `gzip` compression level should be configurable via an environment variable named `COMPRESSION_LEVEL`. Write a simple shell script that utilizes this environment variable to control the compression level when creating the archive.",
     "How can you efficiently search, recall, and re-execute previous commands from your Bash history, especially when dealing with a long history file?",
     "You frequently type a long command like `ls -lha --color=auto`. How can you create a permanent shortcut (alias) for this command to save time, and where would you typically define it so it's available in future shell sessions?",
@@ -83,6 +76,13 @@
     "Explain the concept of `systemd` targets and how they relate to the traditional SysVinit runlevels. Provide examples of common `systemd` targets and their equivalent runlevels.",
     "You notice that a critical application service, `data-processor.service`, is in a `failed` state. Outline a step-by-step approach using `systemctl` and `journalctl` to diagnose the root cause of the failure.",
     "You've written a Bash script (`/usr/local/bin/cleanup.sh`) that performs daily log cleanup. You want to run this script as a `systemd` service that starts automatically at boot and restarts if it fails. Create a `systemd` service unit file for this script, ensuring it runs as a non-root user (`cleanupuser`) and logs its output to `journalctl`.",
-    "In `systemd`, managing dependencies between services is crucial for ensuring proper startup order and functionality. Explain the purpose and practical differences between `Requires=`, `Wants=`, and `After=` directives within a `systemd` unit file. Provide a scenario where each would be most appropriate."
+    "In `systemd`, managing dependencies between services is crucial for ensuring proper startup order and functionality. Explain the purpose and practical differences between `Requires=`, `Wants=`, and `After=` directives within a `systemd` unit file. Provide a scenario where each would be most appropriate.",
+    "Explain the core principles of SSH key-based authentication. How do you generate an SSH key pair, and what steps are involved in securely deploying the public key to a remote server for passwordless login?",
+    "You need to transfer a large directory from a local machine to a remote server, and then later securely fetch a single file from that server. Describe which command-line tools (`scp` or `sftp`) you would use for each scenario and explain the key differences and advantages of each tool.",
+    "Your team manages multiple remote servers, and you find yourself typing long SSH commands with various options (`-i`, `-p`, specific user@host). How can you simplify this process using the `~/.ssh/config` file? Provide an example configuration that defines an alias for a server, specifies a non-standard port, and uses a specific identity file.",
+    "You're developing a Bash script that needs to execute a command on a remote server via SSH. The script should run non-interactively without prompting for a password or host key confirmation. How would you structure this SSH command within your script, and what security considerations (especially regarding `StrictHostKeyChecking` and key management) should you keep in mind?",
+    "Describe the concept of SSH port forwarding (tunneling). Explain the difference between local port forwarding and remote port forwarding, and provide a practical use case for each in a DevOps context.",
+    "You're troubleshooting an SSH connection issue where you can't connect to a remote server. What steps and `ssh` command-line options would you use to diagnose the problem, assuming you've already verified network connectivity (e.g., ping)?",
+    "You have multiple SSH keys for different projects and servers. How can `ssh-agent` and `ssh-add` help you manage these keys more efficiently, avoiding repeated passphrase entries? Explain the workflow and its benefits."
   ]
 }
