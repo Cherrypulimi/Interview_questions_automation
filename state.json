@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux Networking Configuration (IP, DNS, hostname, routing)",
     "Linux Security Basics (firewalld, iptables, SELinux basics)",
     "Process & Resource Monitoring (top, vmstat, iostat, free)",
     "Linux Boot Process (BIOS, GRUB, systemd boot sequence)",
@@ -31,16 +30,10 @@
     "Cron Jobs & Task Scheduling (crontab, at, system timers)",
     "System Logs & Monitoring (journalctl, /var/log, dmesg)",
     "Linux Services Management (systemctl, service, systemd)",
-    "SSH & Remote Access (ssh, scp, sftp, key-based authentication)"
+    "SSH & Remote Access (ssh, scp, sftp, key-based authentication)",
+    "Linux Networking Configuration (IP, DNS, hostname, routing)"
   ],
   "recent_questions": [
-    "You need to create a daily `tar.gz` archive of the `/var/log/app` directory. The desired `gzip` compression level should be configurable via an environment variable named `COMPRESSION_LEVEL`. Write a simple shell script that utilizes this environment variable to control the compression level when creating the archive.",
-    "How can you efficiently search, recall, and re-execute previous commands from your Bash history, especially when dealing with a long history file?",
-    "You frequently type a long command like `ls -lha --color=auto`. How can you create a permanent shortcut (alias) for this command to save time, and where would you typically define it so it's available in future shell sessions?",
-    "Explain the primary differences and typical use cases for `~/.bashrc`, `~/.bash_profile`, and `/etc/profile` in a Bash environment. When would you put a command or variable definition in one versus the other?",
-    "You have several log files in a directory: `app_20231001.log`, `app_20231002.log`, `nginx_access.log`, `error.log`. Demonstrate how to use shell wildcards to:\n    1.  List all files ending with `.log`.\n    2.  Copy all `app_*.log` files to a `/tmp/backup` directory.\n    3.  Delete all files starting with `nginx_`.",
-    "You need to create a directory named with today's date (e.g., `backup_2023-10-27`). How would you use command substitution to achieve this in a single command, and then list its contents to verify?",
-    "Explain the practical differences between single quotes (`'...'`), double quotes (`\"...\"`), and backticks (``` `...` ``` or `$(...)`) in Bash, especially concerning variable expansion and command substitution. Provide examples where using the wrong type of quote would lead to unexpected behavior.",
     "You're troubleshooting an application that writes logs to `/var/log/myapp` and stores configuration in `/etc/myapp`. You also have user-specific scripts in your home directory `~`.\n    1.  Describe the significance of `/var` and `/etc` in the Linux file system hierarchy for this scenario.\n    2.  From your home directory, how would you navigate to `/var/log/myapp` using an *absolute path* and then back to `/etc/myapp` using a *relative path*?",
     "Write a Bash script that takes a filename as its first argument. The script should check if the file exists and is a regular file. If it exists, print its absolute path, size in bytes, and modification timestamp. If it does not exist or is not a regular file, print an error message and exit with a non-zero status.",
     "You have a directory `/app/data` containing various log files, some of which might be large. Write a Bash script that iterates through all files in `/app/data` (not subdirectories). For each file, if it's a regular file, the script should check its size. If the file size is greater than 10MB, it should print the filename and its size, then append a line \"--- LARGE FILE ---\" to the end of that file.",
@@ -83,6 +76,13 @@
     "You're developing a Bash script that needs to execute a command on a remote server via SSH. The script should run non-interactively without prompting for a password or host key confirmation. How would you structure this SSH command within your script, and what security considerations (especially regarding `StrictHostKeyChecking` and key management) should you keep in mind?",
     "Describe the concept of SSH port forwarding (tunneling). Explain the difference between local port forwarding and remote port forwarding, and provide a practical use case for each in a DevOps context.",
     "You're troubleshooting an SSH connection issue where you can't connect to a remote server. What steps and `ssh` command-line options would you use to diagnose the problem, assuming you've already verified network connectivity (e.g., ping)?",
-    "You have multiple SSH keys for different projects and servers. How can `ssh-agent` and `ssh-add` help you manage these keys more efficiently, avoiding repeated passphrase entries? Explain the workflow and its benefits."
+    "You have multiple SSH keys for different projects and servers. How can `ssh-agent` and `ssh-add` help you manage these keys more efficiently, avoiding repeated passphrase entries? Explain the workflow and its benefits.",
+    "Describe the process of configuring a static IPv4 address, subnet mask, and default gateway on a modern Linux system (e.g., RHEL/CentOS 8+, Ubuntu 20.04+) using command-line tools, ensuring the configuration persists across reboots. How does this approach differ from configuring an interface to use DHCP?",
+    "A critical microservice running on your Linux server is failing to connect to an external API, reporting \"Name or service not known\" errors. Outline a systematic troubleshooting approach using command-line tools and configuration files to diagnose and resolve potential DNS resolution issues.",
+    "Explain the different types of hostnames (static, pretty, transient) in a modern Linux system and how they are managed. Demonstrate how to set a persistent static hostname for a server named `webserver01.example.com` and verify its configuration.",
+    "You need to configure a Linux server to send traffic destined for the `192.168.50.0/24` network segment through a specific gateway IP address, `10.0.0.254`, which is not the default gateway. Explain how to add this static route using the `ip` command and ensure it persists across reboots on a `systemd`-based distribution (e.g., using NetworkManager or `systemd-networkd`).",
+    "As a DevOps engineer, you frequently need to monitor network interface status and traffic. How would you use command-line tools to display the IP addresses and configuration of all active network interfaces, and then monitor real-time network traffic statistics for a specific interface (e.g., `eth0` or `enp0s3`)?",
+    "Write a Bash function named `validate_ipv4` that takes a single argument, which is expected to be an IPv4 address string. The function should return an exit code of `0` if the string represents a syntactically valid IPv4 address (e.g., `192.168.1.1`, `10.0.0.255`) and `1` otherwise. Demonstrate how to use this function in a simple script.",
+    "Using `nmcli`, how would you configure a specific network interface (e.g., `enp0s3`) to obtain its IP address, subnet mask, and default gateway automatically via DHCP? After setting this, how would you then override the DNS servers to use `8.8.8.8` and `8.8.4.4` for that specific connection, ensuring these settings persist and are applied immediately?"
   ]
 }

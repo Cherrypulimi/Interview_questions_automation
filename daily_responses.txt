@@ -4864,3 +4864,301 @@ Here's the workflow and its benefits:
     *   Centralized Key Management: Provides a single point to manage the currently active set of private keys for your session.
 
 
+--- Date: 2026-04-27 06:14:44 ---
+Topic: Linux Networking Configuration (IP, DNS, hostname, routing)
+Description: DevOps Engineers, Cloud Engineers, SREs! 🚀 Mastering Linux networking is non-negotiable for building resilient infrastructure. This week, we're diving deep into configuring IP addresses, DNS, hostnames, and routing. Swipe through these 7 interview questions to test your knowledge and sharpen your skills for your next technical interview! #Linux #DevOps #Networking #InterviewPrep #CloudEngineering #SRE
+
+Q1: Describe the process of configuring a static IPv4 address, subnet mask, and default gateway on a modern Linux system (e.g., RHEL/CentOS 8+, Ubuntu 20.04+) using command-line tools, ensuring the configuration persists across reboots. How does this approach differ from configuring an interface to use DHCP?
+Solution: Configuring a static IPv4 address persistently on modern Linux systems is typically done using `nmcli` (NetworkManager CLI) or by directly editing configuration files (less common for interactive setup).
+
+*   Static IP Configuration (using `nmcli`):
+    1.  First, identify your network interface name (e.g., `enp0s3`, `eth0`) using `ip a` or `nmcli dev status`. Let's assume `enp0s3` and an existing connection named `enp0s3`.
+    2.  Modify the connection to use a static IP, subnet, gateway, and DNS servers:
+        ```bash
+        nmcli con mod enp0s3 ipv4.method manual \
+        ipv4.addresses "192.168.1.100/24" \
+        ipv4.gateway "192.168.1.1" \
+        ipv4.dns "8.8.8.8,8.8.4.4" \
+        autoconnect yes
+        ```
+    3.  Bring the connection down and then up to apply the changes immediately:
+        ```bash
+        nmcli con down enp0s3
+        nmcli con up enp0s3
+        ```
+    4.  Verify the configuration with `ip a show enp0s3` and `cat /etc/resolv.conf`.
+
+*   Persistence: `nmcli` changes are automatically saved to NetworkManager's configuration files (e.g., in `/etc/NetworkManager/system-connections/`), ensuring they persist across reboots.
+
+*   Difference from DHCP:
+    *   Static IP: You manually define the IP address, subnet mask, default gateway, and DNS servers. The system will always attempt to use these specific values.
+    *   DHCP (Dynamic Host Configuration Protocol): The network interface automatically requests and obtains its IP address, subnet mask, default gateway, and DNS server information from a DHCP server on the network. This is configured using `nmcli con mod enp0s3 ipv4.method auto`.
+
+Q2: A critical microservice running on your Linux server is failing to connect to an external API, reporting "Name or service not known" errors. Outline a systematic troubleshooting approach using command-line tools and configuration files to diagnose and resolve potential DNS resolution issues.
+Solution: Diagnosing DNS resolution issues requires a systematic approach to check connectivity, configuration, and resolver functionality.
+
+*   1. Verify Network Connectivity:
+    First, ensure basic network connectivity. Try pinging a known public IP address (e.g., `ping 1.1.1.1` or `ping 8.8.8.8`). If this fails, the issue is broader than DNS (e.g., gateway, firewall, physical link).
+
+*   2. Check DNS Server Configuration (`/etc/resolv.conf`):
+    Inspect the `/etc/resolv.conf` file. This file lists the DNS servers your system uses. Look for `nameserver` entries. Ensure they are valid, reachable, and in the correct order. If `systemd-resolved` is active, this file might point to `127.0.0.53` (a local stub resolver), and you'd check `resolvectl status` for actual upstream DNS servers.
+
+*   3. Test DNS Resolution with Specific Servers (`dig`, `nslookup`):
+    Use `dig` or `nslookup` to test name resolution against the configured DNS servers and external ones. For example:
+    ```bash
+    dig example.com              # Uses configured DNS servers
+    dig @8.8.8.8 example.com     # Tests a specific DNS server (Google DNS)
+    nslookup example.com
+    nslookup example.com 8.8.8.8
+    ```
+    Look for `NOERROR` status and a valid IP address in the `ANSWER SECTION`. If `dig` against a specific server works but the default doesn't, the issue is with your configured `nameserver` in `/etc/resolv.conf` or `systemd-resolved`.
+
+*   4. Check Hostname Resolution Order (`/etc/nsswitch.conf` and `/etc/hosts`):
+    The `/etc/nsswitch.conf` file defines the order in which services (like DNS, local files) are consulted for name resolution. Ensure the `hosts:` line includes `files` before `dns` if you rely on `/etc/hosts` for local overrides, or `dns` if you primarily use DNS. Also, check `/etc/hosts` for any incorrect or outdated entries that might be overriding the external API's hostname.
+
+*   5. Restart DNS Services (if applicable):
+    If you've modified configuration files like `/etc/resolv.conf` (or if `systemd-resolved` is in use and you've changed its upstream servers), you might need to restart the relevant service to apply changes:
+    ```bash
+    sudo systemctl restart NetworkManager  # If using NetworkManager
+    sudo systemctl restart systemd-resolved # If using systemd-resolved
+    ```
+    After restarting, re-test the resolution.
+
+Q3: Explain the different types of hostnames (static, pretty, transient) in a modern Linux system and how they are managed. Demonstrate how to set a persistent static hostname for a server named `webserver01.example.com` and verify its configuration.
+Solution: Modern Linux systems, especially those using `systemd`, distinguish between three types of hostnames:
+
+*   1. Static Hostname: This is the traditional hostname stored in `/etc/hostname`. It's the primary hostname and should be a fully qualified domain name (FQDN) like `webserver01.example.com`. It is persistent across reboots.
+
+*   2. Pretty Hostname: A free-form, human-readable UTF-8 hostname, often used for display in user interfaces. For example, "My Web Server 01". It's optional and stored in `/etc/machine-info`.
+
+*   3. Transient Hostname: This is the hostname received from network configuration (e.g., DHCP or mDNS) or set by kernel at boot. It's dynamic and non-persistent. If no static hostname is set, the system might fall back to the transient hostname.
+
+*   Management with `hostnamectl`:
+    The `hostnamectl` command is the standard tool to manage these hostnames. To set a persistent static hostname:
+    ```bash
+    sudo hostnamectl set-hostname webserver01.example.com
+    ```
+    To set a pretty hostname (optional):
+    ```bash
+    sudo hostnamectl set-hostname "Web Server 01" --pretty
+    ```
+
+*   Verification:
+    You can verify the hostnames using `hostnamectl status` or simply `hostname` for the static hostname:
+    ```bash
+    hostnamectl status
+    # Expected output similar to:
+    #    Static hostname: webserver01.example.com
+    #    Pretty hostname: Web Server 01
+    #          Icon name: computer-server
+    #            Chassis: server
+    #         Machine ID: ...
+    #            Boot ID: ...
+    #   Operating System: Ubuntu 22.04.4 LTS
+    #             Kernel: Linux 6.5.0-28-generic
+    #       Architecture: x86-64
+
+    hostname          # Displays the static hostname
+    ```
+
+*   Related Files:
+    *   `/etc/hostname`: Stores the static hostname.
+    *   `/etc/machine-info`: Stores the pretty hostname and other machine details.
+    *   `/etc/hosts`: While not directly setting the system's hostname, this file is crucial for local hostname resolution. It's good practice to include an entry for your new hostname pointing to `127.0.0.1` or the server's primary IP address (e.g., `127.0.0.1 webserver01.example.com webserver01`).
+
+Q4: You need to configure a Linux server to send traffic destined for the `192.168.50.0/24` network segment through a specific gateway IP address, `10.0.0.254`, which is not the default gateway. Explain how to add this static route using the `ip` command and ensure it persists across reboots on a `systemd`-based distribution (e.g., using NetworkManager or `systemd-networkd`).
+Solution: Adding a static route involves two main steps: temporarily adding it with `ip` and then making it persistent.
+
+*   1. Temporarily Add the Route (`ip route` command):
+    To add the route immediately (it will be lost on reboot):
+    ```bash
+    sudo ip route add 192.168.50.0/24 via 10.0.0.254 dev enp0s3
+    ```
+    Replace `enp0s3` with the actual network interface through which the gateway `10.0.0.254` is reachable. You can verify this with `ip route show`.
+
+*   2. Ensure Persistence (using NetworkManager):
+    For `NetworkManager`-managed systems (common on RHEL/CentOS/Fedora/Ubuntu Desktop), you can add persistent routes using `nmcli`:
+    ```bash
+    nmcli con modify enp0s3 +ipv4.routes "192.168.50.0/24 10.0.0.254"
+    ```
+    Then, activate the connection to apply changes:
+    ```bash
+    nmcli con up enp0s3
+    ```
+    This command adds the route to the connection's configuration file (e.g., in `/etc/NetworkManager/system-connections/`) making it persistent.
+
+*   3. Ensure Persistence (using `systemd-networkd`):
+    For systems using `systemd-networkd` (common on CoreOS, some Ubuntu server setups), you create a `.network` file:
+    1.  Create a new configuration file, e.g., `/etc/systemd/network/50-static-route.network`:
+        ```ini
+        [Match]
+        Name=enp0s3
+
+        [Route]
+        Destination=192.168.50.0/24
+        Gateway=10.0.0.254
+        ```
+        Replace `enp0s3` with your actual interface name.
+    2.  Reload `systemd-networkd` to apply:
+        ```bash
+        sudo systemctl restart systemd-networkd
+        ```
+
+*   4. Verification:
+    After applying the persistent configuration (and restarting the network service if necessary), always verify the route is present:
+    ```bash
+    ip route show
+    # Look for an entry like:
+    # 192.168.50.0/24 via 10.0.0.254 dev enp0s3
+    ```
+
+Q5: As a DevOps engineer, you frequently need to monitor network interface status and traffic. How would you use command-line tools to display the IP addresses and configuration of all active network interfaces, and then monitor real-time network traffic statistics for a specific interface (e.g., `eth0` or `enp0s3`)?
+Solution: Monitoring network interfaces involves checking their current configuration and observing traffic flow.
+
+*   1. Display IP Addresses and Configuration:
+    The `ip addr show` (or `ip a`) command is the modern standard for displaying IP addresses and interface configurations. It shows all interfaces, their state (UP/DOWN), MAC addresses, IP addresses (IPv4 and IPv6), and broadcast addresses.
+    ```bash
+    ip addr show
+    # Example output snippet for an interface:
+    # 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    #     link/ether 08:00:27:1c:77:49 brd ff:ff:ff:ff:ff:ff
+    #     inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+    #        valid_lft 85374sec preferred_lft 85374sec
+    #     inet6 fe80::a00:27ff:fe1c:7749/64 scope link 
+    #        valid_lft forever preferred_lft forever
+    ```
+    For more detailed link-layer information (MTU, state, queue length), use `ip link show`.
+
+*   2. Monitor Real-time Network Traffic Statistics:
+    There are several tools for real-time traffic monitoring, each with its strengths:
+
+    *   `iftop` (Interactive Top for Network): Provides a continually updated display of network bandwidth usage, showing source/destination IP addresses and ports. It's excellent for quickly identifying which connections are consuming bandwidth. You'll likely need to install it (`sudo apt install iftop` or `sudo yum install iftop`).
+        ```bash
+        sudo iftop -i enp0s3
+        ```
+
+    *   `nload` (Network Load Display): A simpler console application that displays two graphs, one for incoming and one for outgoing traffic, along with total data transferred. It's easier to read for overall interface load. Install with `sudo apt install nload` or `sudo yum install nload`.
+        ```bash
+        nload -i enp0s3
+        ```
+
+    *   `sar -n DEV` (System Activity Reporter): Part of the `sysstat` package, `sar` can report various system statistics, including network interface activity. It's not strictly real-time but can give statistics at specified intervals.
+        ```bash
+        sar -n DEV 1 5 # Shows network stats every 1 second, 5 times
+        ```
+
+    *   `watch` with `ip -s link`: For a basic, command-line-only approach without installing extra tools, you can combine `watch` with `ip -s link show <interface>` to refresh interface statistics periodically:
+        ```bash
+        watch -n 1 'ip -s link show enp0s3'
+        # Look at the RX (received) and TX (transmitted) bytes/packets
+        ```
+
+Q6: Write a Bash function named `validate_ipv4` that takes a single argument, which is expected to be an IPv4 address string. The function should return an exit code of `0` if the string represents a syntactically valid IPv4 address (e.g., `192.168.1.1`, `10.0.0.255`) and `1` otherwise. Demonstrate how to use this function in a simple script.
+Solution: This Bash function uses regular expressions to validate an IPv4 address string. A robust regex ensures that each octet is between 0 and 255.
+
+```bash
+#!/bin/bash
+
+# Function to validate an IPv4 address
+validate_ipv4() {
+    local ip=$1
+    # Regex to match IPv4 addresses (0-255 in each octet)
+    # ^                                  # Start of string
+    # ((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3} # Matches three octets followed by a dot
+    # (25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)   # Matches the final octet
+    # $                                  # End of string
+    local ip_regex="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
+    if [[ $ip =~ $ip_regex ]]; then
+        return 0 # Valid IP
+    else
+        return 1 # Invalid IP
+    fi
+}
+
+# --- Demonstration --- 
+
+echo "Testing IP address validation:"
+
+# Test cases
+TEST_IPS=(
+    "192.168.1.1"   # Valid
+    "10.0.0.255"    # Valid
+    "0.0.0.0"       # Valid
+    "255.255.255.255" # Valid
+    "192.168.1.256" # Invalid (octet > 255)
+    "192.168.1"     # Invalid (too few octets)
+    "invalid-ip"    # Invalid (non-numeric)
+    "1.2.3.4.5"     # Invalid (too many octets)
+    "2001:0db8::1"  # Invalid (IPv6)
+)
+
+for ip_to_test in "${TEST_IPS[@]}"; do
+    if validate_ipv4 "$ip_to_test"; then
+        echo "\"$ip_to_test\" is a VALID IPv4 address."
+    else
+        echo "\"$ip_to_test\" is an INVALID IPv4 address."
+    fi
+done
+
+# Demonstrate exit code usage
+validate_ipv4 "172.16.0.1"
+if [ $? -eq 0 ]; then
+    echo "Function returned success (0) for 172.16.0.1"
+else
+    echo "Function returned failure (1) for 172.16.0.1"
+fi
+
+validate_ipv4 "300.0.0.1"
+if [ $? -ne 0 ]; then
+    echo "Function returned failure (1) for 300.0.0.1"
+else
+    echo "Function returned success (0) for 300.0.0.1"
+fi
+```
+
+Q7: Using `nmcli`, how would you configure a specific network interface (e.g., `enp0s3`) to obtain its IP address, subnet mask, and default gateway automatically via DHCP? After setting this, how would you then override the DNS servers to use `8.8.8.8` and `8.8.4.4` for that specific connection, ensuring these settings persist and are applied immediately?
+Solution: Configuring network interfaces with `nmcli` is a common task. Here's how to set up DHCP and then override DNS servers persistently.
+
+*   1. Identify the Connection:
+    First, list existing connections to find the name associated with your interface (e.g., `enp0s3`). Often, the connection name is the same as the interface name.
+    ```bash
+    nmcli con show
+    # Look for a connection that corresponds to your interface, e.g., 'enp0s3'
+    ```
+    Let's assume the connection name is also `enp0s3`.
+
+*   2. Configure Interface for DHCP:
+    To set the connection to obtain IP address, subnet mask, and default gateway automatically via DHCP, you modify the `ipv4.method` property to `auto`:
+    ```bash
+    sudo nmcli con modify enp0s3 ipv4.method auto
+    ```
+
+*   3. Override DNS Servers:
+    To set specific DNS servers while still using DHCP for IP address assignment, you use the `ipv4.dns` property. Provide a comma-separated list of DNS server IP addresses:
+    ```bash
+    sudo nmcli con modify enp0s3 ipv4.dns "8.8.8.8,8.8.4.4"
+    ```
+
+*   4. Apply Changes Immediately:
+    For the changes to take effect without a reboot, you need to bring the network connection down and then back up:
+    ```bash
+    sudo nmcli con down enp0s3
+    sudo nmcli con up enp0s3
+    ```
+
+*   5. Verify Configuration:
+    After applying the changes, verify the IP address and DNS settings:
+    *   Check IP address (should be from DHCP):
+        ```bash
+        ip addr show enp0s3
+        ```
+    *   Check DNS servers (should be your custom ones):
+        ```bash
+        cat /etc/resolv.conf
+        # Or, if systemd-resolved is active:
+        resolvectl status enp0s3
+        ```
+    These changes are automatically saved by NetworkManager to its configuration files (e.g., `/etc/NetworkManager/system-connections/enp0s3.nmconnection`), ensuring they persist across reboots.
+
+
