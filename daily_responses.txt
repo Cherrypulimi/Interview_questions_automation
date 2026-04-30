@@ -5889,3 +5889,230 @@ Here's a step-by-step approach:
     *   Ensure permissions are correct (e.g., `sshd_config` should be `600` or `644`, host keys `600`). Pay attention to `ListenAddress`, `Port`, and `PermitRootLogin` directives. After making changes to `sshd_config`, you *must* restart the `sshd` service for them to take effect (`sudo systemctl restart sshd`).
 
 
+--- Date: 2026-04-30 06:16:34 ---
+Topic: Linux Troubleshooting for DevOps (disk full, high CPU, memory issues)
+Description: Ever found yourself battling a full disk, a CPU gone rogue, or mysterious memory leaks on a Linux server? These are daily challenges for DevOps Engineers! Mastering Linux troubleshooting is non-negotiable for keeping your systems healthy and performant. Swipe through these 7 critical interview questions designed to sharpen your diagnostic skills and ace your next technical interview. #devops #linux #sre #cloudengineering #interviewprep #dataengineering
+
+Q1: A critical application partition (e.g., `/var/log`) on a production server is reported as 98% full. Describe your step-by-step diagnostic process to identify the largest consumers of disk space and the safest methods to free up space without causing service interruption. How would you prevent this from happening again?
+Solution: Diagnosing and resolving a disk full issue in a production environment requires a systematic and cautious approach to avoid impacting services.
+
+1.  Verify Disk Usage: First, confirm the alert and identify the specific partition using `df -h`.
+    ```bash
+    df -h /var/log
+    ```
+2.  Locate Large Files/Directories: Use `du` to find the largest directories and files within the affected partition. Start from the top-level directory and progressively drill down.
+    ```bash
+    sudo du -sh /var/log/* | sort -rh | head -n 10
+    # Example: if /var/log/nginx is large, then run:
+    sudo du -sh /var/log/nginx/* | sort -rh | head -n 10
+    ```
+3.  Identify Open but Deleted Files: Sometimes, processes hold open files that have been deleted, meaning their space isn't freed. `lsof` can identify these.
+    ```bash
+    sudo lsof | grep deleted | grep "/var/log"
+    # To free space, restart the associated service (if safe) or kill the process.
+    ```
+4.  Safely Free Up Space: Prioritize temporary files, old logs, or application caches. For logs, avoid direct deletion; use log rotation or truncate files gracefully.
+    ```bash
+    # Truncate a large log file without restarting the service:
+    sudo truncate -s 0 /var/log/largeapp.log
+    # Or, if using logrotate, force rotation (check config first!):
+    sudo logrotate -f /etc/logrotate.conf
+    # For Docker, consider pruning old images/containers (if applicable and safe):
+    docker system prune -a
+    ```
+5.  Implement Preventative Measures: To prevent recurrence, configure `logrotate` for application logs, set up regular cleanup scripts for temporary directories, implement disk usage monitoring with alerts, and consider increasing partition size or offloading logs to a centralized logging system.
+
+Q2: A Linux server is exhibiting high CPU usage, making it unresponsive, and `top` is either too slow to respond or shows confusing output. What alternative command-line tools and techniques would you use to precisely identify which processes or threads are consuming the most CPU resources? How would you gather more granular data about the identified culprits?
+Solution: When `top` is insufficient or unresponsive, alternative tools and techniques can provide crucial insights into high CPU utilization.
+
+1.  Identify High CPU Processes with `ps`: The `ps` command, sorted by CPU usage, is a robust alternative. It provides a snapshot of processes.
+    ```bash
+    ps aux --sort=-%cpu | head -n 10
+    # Explanation: 'aux' shows all processes, '--sort=-%cpu' sorts by CPU usage (descending).
+    ```
+2.  Monitor with `htop` (if available): If `top` is slow but the terminal is somewhat responsive, `htop` offers a more user-friendly and interactive interface, often performing better under load due to its ncurses interface and immediate display refresh. It can also show individual threads.
+    ```bash
+    htop
+    # Inside htop, press 'F6' to sort by CPU, 'H' to toggle threads view.
+    ```
+3.  Examine `/proc/<PID>/stat`: For a specific process identified by `ps` or `htop`, its `/proc/<PID>/stat` file contains a wealth of raw CPU statistics, including user-mode and kernel-mode CPU times (`utime` and `stime`). This requires parsing but offers very granular data.
+    ```bash
+    # Example for PID 12345
+    cat /proc/12345/stat
+    # Specifically, the 14th and 15th fields (utime and stime) represent CPU usage in jiffies.
+    ```
+4.  Trace System Calls with `strace`: If a process is consuming high CPU, `strace` can reveal what system calls it's making, which might indicate a loop or excessive I/O operations. Use with caution in production, as it can slow down the process further.
+    ```bash
+    sudo strace -p 12345
+    # To get a summary of system calls and their times:
+    sudo strace -c -p 12345
+    ```
+5.  Advanced Profiling with `perf`: For deep analysis of CPU usage (kernel and user space), `perf` is an invaluable tool. It can sample CPU activity and provide detailed call graphs.
+    ```bash
+    sudo perf top -p 12345
+    sudo perf record -F 99 -ag --pid 12345 -- sleep 10
+    sudo perf report
+    ```
+
+Q3: You suspect a memory leak in a newly deployed application on a remote server, leading to application crashes and system sluggishness. Without using `free` or `vmstat`, how would you systematically identify processes with high memory consumption and investigate whether the system is truly running out of RAM or if a specific application is mismanaging its memory?
+Solution: Investigating memory issues without `free` or `vmstat` requires leveraging process-specific details and kernel diagnostics.
+
+1.  Identify High Memory Processes with `ps`: Use `ps` to list processes sorted by memory consumption. This provides a quick overview of which applications are the hungriest.
+    ```bash
+    ps aux --sort=-%mem | head -n 10
+    # Look at the %MEM column to identify top consumers.
+    ```
+2.  Examine `/proc/<PID>/status`: For a specific process ID (PID) identified in the previous step, its `/proc/<PID>/status` file contains detailed memory statistics, including `VmRSS` (Resident Set Size, actual physical memory used), `VmSize` (total virtual memory size), and `VmSwap` (swapped memory).
+    ```bash
+    # Example for PID 12345
+    cat /proc/12345/status | grep -E 'VmRSS|VmSize|VmSwap'
+    ```
+3.  Use `pmap` for Memory Maps: The `pmap` command can display the memory map of a process, showing how its virtual memory is allocated. This can help identify large anonymous mappings or shared libraries consuming significant space.
+    ```bash
+    sudo pmap -x 12345
+    ```
+4.  Check Kernel Messages for OOM Killer: The Linux kernel's Out-Of-Memory (OOM) killer steps in when the system truly runs out of memory. Its actions are logged in the kernel ring buffer, accessible via `dmesg` or `journalctl`.
+    ```bash
+    dmesg | grep -i oom
+    journalctl -k | grep -i oom
+    # The OOM killer messages will indicate which process was killed due to memory exhaustion.
+    ```
+5.  Analyze Application Logs: Application-specific logs often contain `OutOfMemoryError` messages or similar warnings that can point directly to the application's memory mismanagement issues, even if the system has available RAM.
+
+Q4: A DevOps engineer reports that a server's `/var` partition is 80% full, but `df -h` shows plenty of free space, indicating an inode exhaustion issue. Explain what an inode is and how you would diagnose and resolve such a situation. What are common causes of inode exhaustion?
+Solution: Inode exhaustion occurs when a filesystem runs out of available inodes, even if there's physical disk space remaining. This prevents the creation of new files or directories.
+
+1.  What is an Inode?: An inode (index node) is a data structure on a Unix-like filesystem that stores information about a file or directory, such as its permissions, ownership, timestamps, and physical disk block locations. Each file or directory requires exactly one inode. Filesystem size dictates the total number of inodes available, set at creation.
+2.  Diagnose Inode Exhaustion: Use `df -i` to display inode usage for all mounted filesystems. High `%IUse` (percentage of inodes used) indicates an issue.
+    ```bash
+    df -i /var
+    # If '/var' shows high %IUse (e.g., 90%+) but 'df -h /var' shows plenty of free space, it's inode exhaustion.
+    ```
+3.  Locate Directories with Many Small Files: Inode exhaustion is typically caused by a massive number of small files. Use `find` and `du` to pinpoint the directories containing the most files.
+    ```bash
+    # Find top 10 directories with most files in /var
+    sudo find /var -xdev -printf '%h\n' | sort | uniq -c | sort -rn | head -n 10
+    # -xdev prevents crossing filesystem boundaries; -printf '%h\n' prints parent directory.
+    ```
+4.  Resolve the Issue: Once identified, safely delete or archive the numerous small files. Common culprits include session files, temporary build artifacts, caching directories, or logs generated by misconfigured applications. Be cautious when deleting files in production.
+    ```bash
+    # Example: Delete files older than 7 days in a problematic directory
+    sudo find /var/cache/app_sessions -type f -mtime +7 -delete
+    ```
+5.  Common Causes: Inode exhaustion is often caused by: misconfigured applications creating excessive temporary files or empty files; web servers storing many small session files; caching mechanisms; or package managers leaving behind many small files after failed installations. Implementing proper cleanup routines and log rotation can prevent this.
+
+Q5: You are troubleshooting a remote server that is experiencing severe performance degradation (e.g., high CPU, I/O wait), making regular SSH sessions extremely slow or prone to disconnection. What strategies and SSH features would you employ to maintain a more robust and responsive connection to effectively diagnose and resolve the issue, especially if you need to transfer diagnostic logs?
+Solution: When SSH sessions are unstable due to server performance issues, specific SSH client options and remote session management tools become critical.
+
+1.  Use SSH Keepalives and Connection Resiliency: Configure your SSH client to send keepalive messages to prevent timeouts and to attempt reconnection. This makes the session more robust.
+    ```bash
+    ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ConnectTimeout=10 user@remote_host
+    # ServerAliveInterval: Sends a message to the server every 30 seconds if no data is received.
+    # ServerAliveCountMax: Disconnects after 3 consecutive keepalive failures.
+    # ConnectTimeout: Sets a timeout for the initial connection attempt.
+    ```
+2.  Leverage SSH ControlMaster for Multiplexing: `ControlMaster` allows multiple SSH sessions to share a single network connection, reducing overhead and potentially making new sessions more responsive if the initial connection is stable. This is especially useful for `scp` or `sftp` during troubleshooting.
+    ```bash
+    # In ~/.ssh/config:
+    Host *
+      ControlMaster auto
+      ControlPath ~/.ssh/sockets/%r@%h:%p
+      ControlPersist 10m # Keep the master connection open for 10 minutes after last client exits
+    # Then, connect normally: ssh user@remote_host
+    # Subsequent commands like scp user@remote_host:/path/to/log . will use the existing connection.
+    ```
+3.  Utilize Terminal Multiplexers (`tmux` or `screen`): Start a `tmux` or `screen` session immediately upon connecting. If your SSH connection drops, the `tmux`/`screen` session continues running on the remote server, and you can reattach to it once SSH connectivity is restored. This prevents loss of work and ongoing diagnostic commands.
+    ```bash
+    ssh user@remote_host
+    # Once connected:
+    tmux new -s troubleshooting
+    # If disconnected, reconnect via SSH and then:
+    tmux attach -t troubleshooting
+    ```
+4.  Efficiently Transfer Logs with `scp` or `rsync`: When transferring large diagnostic logs, ensure you're doing it efficiently. `scp` is good for single files, but `rsync` with compression and partial transfer capabilities is superior for large files or directories over unreliable connections.
+    ```bash
+    # SCP for a single log file
+    scp -o ServerAliveInterval=30 user@remote_host:/var/log/app.log .
+    # rsync for robust transfer, especially for directories or large files
+    rsync -avz --partial user@remote_host:/var/log/app_logs/ ./local_logs/
+    ```
+
+Q6: A critical daemon on your server occasionally spikes in CPU and memory usage, impacting other services. You've identified the process but need to prevent it from consuming excessive resources. How would you implement resource limits for this specific process using Linux capabilities or `systemd` cgroups to ensure it doesn't starve other applications?
+Solution: Limiting resource consumption for a misbehaving process is crucial for system stability. `systemd` cgroups offer a powerful and modern way to achieve this.
+
+1.  Understand `systemd` and Cgroups: `systemd` uses Control Groups (cgroups) to manage and allocate system resources (CPU, memory, I/O, network) among groups of processes. Each `systemd` service runs within its own cgroup, allowing fine-grained control.
+2.  Modify the `systemd` Service Unit File: The most effective way to apply resource limits to a daemon managed by `systemd` is by modifying its service unit file. Create an override file to avoid directly editing the original.
+    ```bash
+    # Example: For a service named 'myapp.service'
+    sudo systemctl edit myapp.service
+    # This opens an editor for /etc/systemd/system/myapp.service.d/override.conf
+    ```
+3.  Apply CPU Limits: Use `CPUQuota` to limit the percentage of CPU time the service can use. `CPUWeight` (or `CPUShares`) can also be used for proportional sharing, but `CPUQuota` provides a hard limit.
+    ```ini
+    # In override.conf:
+    [Service]
+    CPUQuota=50%
+    # This limits the service to 50% of one CPU core. For multi-core, 100% means one full core.
+    # For example, on an 8-core system, 400% would be 4 cores.
+    ```
+4.  Apply Memory Limits: Use `MemoryLimit` to set a hard limit on the total memory (RAM + swap) the service can consume. `MemorySwapMax` can limit swap usage specifically.
+    ```ini
+    # In override.conf:
+    [Service]
+    MemoryLimit=512M
+    MemorySwapMax=0 # Prevent swapping for this service (use with caution)
+    # When the limit is reached, the OOM killer might terminate the process.
+    ```
+5.  Reload and Restart: After modifying the override file, reload `systemd` and restart the service for the changes to take effect.
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl restart myapp.service
+    # Verify limits using 'systemctl status myapp.service' or 'systemd-cgtop'.
+    ```
+
+Q7: An application on a production server exhibits intermittent performance issues (e.g., slow responses, occasional timeouts) that are hard to catch in real-time. Describe how you would use logging and persistent monitoring tools to capture diagnostic information over time to pinpoint the root cause. How would you ensure log files don't fill up the disk during this process?
+Solution: Diagnosing intermittent issues requires capturing and analyzing data over time. A combination of robust logging, persistent monitoring, and log management is key.
+
+1.  Centralized & Enhanced Application Logging: Ensure the application's logging is verbose enough to capture relevant events (request times, errors, database queries, external API calls) and is sent to a centralized logging solution (e.g., ELK stack, Splunk, Loki). This allows for easy searching and correlation across multiple instances.
+    ```bash
+    # Example: Configure logback/log4j/Python logging to include timestamps, log levels, and relevant context.
+    # In a typical log file, look for patterns like:
+    # 2023-10-27 10:30:05.123 [WARN] Application took 1200ms to process request /api/data
+    # 2023-10-27 10:30:05.124 [ERROR] Database connection timed out for user 'appuser'
+    ```
+2.  System-Level Persistent Monitoring: Deploy a monitoring agent (e.g., Prometheus Node Exporter, `collectd`, Datadog agent) to collect system metrics (CPU, memory, disk I/O, network I/O, process count, load average) at regular intervals. Configure dashboards and alerts for deviations from baselines.
+    ```bash
+    # Example: Check Node Exporter metrics via curl (typically on port 9100)
+    curl http://localhost:9100/metrics | grep -E 'node_cpu|node_memory|node_disk_io'
+    # Set up Prometheus to scrape these metrics and Grafana for visualization.
+    ```
+3.  Kernel and `systemd` Journal Analysis: Regularly review `dmesg` output and `journalctl` for kernel errors, OOM events, or `systemd` service failures that might correlate with application issues. Filter by time to pinpoint events around reported issues.
+    ```bash
+    # View kernel messages from the last hour
+    dmesg -T | grep -E 'error|fail|warn' | tail -n 50
+    # View systemd journal for 'myapp.service' from a specific time range
+    journalctl -u myapp.service --since "2 hours ago" --until "now"
+    ```
+4.  Scheduled Diagnostics with `cron` or `systemd.timer`: For very elusive issues, schedule scripts to run periodically (e.g., every 5 minutes) that capture a snapshot of relevant process statistics (`ps`, `netstat`, `lsof`) and log them. This can catch spikes that monitoring tools might miss at lower resolutions.
+    ```bash
+    # Example cron job to log top 5 CPU processes every 5 minutes
+    */5 * * * * /usr/bin/ps aux --sort=-%cpu | head -n 6 >> /var/log/cpu_monitor.log 2>&1
+    ```
+5.  Log Rotation and Retention Policies: To prevent diagnostic logs from filling up the disk, ensure `logrotate` is properly configured for all application and system logs. Define appropriate rotation frequency, compression, and retention policies. For `systemd` journal logs, configure `journald.conf` for size limits.
+    ```bash
+    # Example /etc/logrotate.d/myapp configuration
+    /var/log/myapp/*.log {
+        daily
+        rotate 7
+        compress
+        delaycompress
+        missingok
+        notifempty
+        create 0640 appuser appgroup
+    }
+    # For systemd journal, edit /etc/systemd/journald.conf:
+    # SystemMaxUse=1G
+    # SystemKeepFree=20%
+    ```
+
+
