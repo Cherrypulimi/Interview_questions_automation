@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Log Analysis & Debugging Techniques",
     "Linux for CI/CD Environments (permissions, automation scripts)",
     "Linux in Cloud Environments (EC2 instance management basics)",
     "Linux Automation for DevOps (cron scripts, monitoring scripts)",
@@ -31,16 +30,10 @@
     "Linux Security Basics (firewalld, iptables, SELinux basics)",
     "Process & Resource Monitoring (top, vmstat, iostat, free)",
     "Linux Boot Process (BIOS, GRUB, systemd boot sequence)",
-    "Linux Troubleshooting for DevOps (disk full, high CPU, memory issues)"
+    "Linux Troubleshooting for DevOps (disk full, high CPU, memory issues)",
+    "Log Analysis & Debugging Techniques"
   ],
   "recent_questions": [
-    "After a recent server reboot, you notice that a newly added network interface card (NIC) is not being detected. How would you use `dmesg` to diagnose if the kernel detected the hardware, if there were any driver-related errors during boot, or if the NIC was initialized correctly? What specific patterns or keywords would you search for?",
-    "In a modern Linux environment, you'll encounter both `systemctl` and `service` commands for managing daemons. Explain the key differences between these two commands, their underlying systems, and when you might still use `service`.",
-    "Describe the structure and key sections of a `systemd` service unit file. Provide an example of a minimal `.service` file for a simple application.",
-    "You've just deployed a new web application service named `webapp.service`. Explain how to use `systemctl` to perform the following actions, and what each action achieves:\n1.  Start the service immediately.\n2.  Check the current status of the service.\n3.  Configure the service to start automatically on boot.\n4.  Prevent the service from starting, even if another enabled service requires it.\n5.  Force a reload of the service's configuration without restarting the application process.",
-    "Explain the concept of `systemd` targets and how they relate to the traditional SysVinit runlevels. Provide examples of common `systemd` targets and their equivalent runlevels.",
-    "You notice that a critical application service, `data-processor.service`, is in a `failed` state. Outline a step-by-step approach using `systemctl` and `journalctl` to diagnose the root cause of the failure.",
-    "You've written a Bash script (`/usr/local/bin/cleanup.sh`) that performs daily log cleanup. You want to run this script as a `systemd` service that starts automatically at boot and restarts if it fails. Create a `systemd` service unit file for this script, ensuring it runs as a non-root user (`cleanupuser`) and logs its output to `journalctl`.",
     "In `systemd`, managing dependencies between services is crucial for ensuring proper startup order and functionality. Explain the purpose and practical differences between `Requires=`, `Wants=`, and `After=` directives within a `systemd` unit file. Provide a scenario where each would be most appropriate.",
     "Explain the core principles of SSH key-based authentication. How do you generate an SSH key pair, and what steps are involved in securely deploying the public key to a remote server for passwordless login?",
     "You need to transfer a large directory from a local machine to a remote server, and then later securely fetch a single file from that server. Describe which command-line tools (`scp` or `sftp`) you would use for each scenario and explain the key differences and advantages of each tool.",
@@ -83,6 +76,13 @@
     "A DevOps engineer reports that a server's `/var` partition is 80% full, but `df -h` shows plenty of free space, indicating an inode exhaustion issue. Explain what an inode is and how you would diagnose and resolve such a situation. What are common causes of inode exhaustion?",
     "You are troubleshooting a remote server that is experiencing severe performance degradation (e.g., high CPU, I/O wait), making regular SSH sessions extremely slow or prone to disconnection. What strategies and SSH features would you employ to maintain a more robust and responsive connection to effectively diagnose and resolve the issue, especially if you need to transfer diagnostic logs?",
     "A critical daemon on your server occasionally spikes in CPU and memory usage, impacting other services. You've identified the process but need to prevent it from consuming excessive resources. How would you implement resource limits for this specific process using Linux capabilities or `systemd` cgroups to ensure it doesn't starve other applications?",
-    "An application on a production server exhibits intermittent performance issues (e.g., slow responses, occasional timeouts) that are hard to catch in real-time. Describe how you would use logging and persistent monitoring tools to capture diagnostic information over time to pinpoint the root cause. How would you ensure log files don't fill up the disk during this process?"
+    "An application on a production server exhibits intermittent performance issues (e.g., slow responses, occasional timeouts) that are hard to catch in real-time. Describe how you would use logging and persistent monitoring tools to capture diagnostic information over time to pinpoint the root cause. How would you ensure log files don't fill up the disk during this process?",
+    "A critical application is logging errors, and its logs are rotated daily and compressed. How would you efficiently search for all occurrences of the string \"ERROR\" in the past 7 days across these rotated and compressed log files, and display 5 lines of context around each match? Assume logs are in `/var/log/myapp/` and follow a `myapp.log`, `myapp.log.1`, `myapp.log.2.gz` pattern.",
+    "You suspect an application is generating intermittent errors, and you need to monitor its log file (`/var/log/myapp/app.log`) in real-time, but only display lines that contain the word \"failed\" or \"error\". How would you achieve this using standard Linux command-line tools?",
+    "Your custom application, `mywebapp`, logs to `/var/log/mywebapp/mywebapp.log`. This log file is growing very rapidly, consuming disk space. Describe how you would configure `logrotate` to rotate this log file weekly, compress old logs, keep 4 weeks of rotated logs, and ensure the `mywebapp` service is gracefully restarted after rotation to open a new log file.",
+    "A critical `systemd` service named `data-processor.service` is failing to start on your Linux server. You have physical console access. Describe your step-by-step approach using `journalctl` to diagnose why it's failing and identify the root cause.",
+    "You're managing a web server (e.g., Nginx or Apache) and need to analyze its access logs (`/var/log/nginx/access.log`) to identify the top 10 IP addresses making requests, as well as count the number of 4xx (client error) and 5xx (server error) responses. How would you accomplish this using standard command-line tools?",
+    "You've been alerted to a potential issue where an application is behaving erratically, but logs don't immediately show a clear \"ERROR\" message. Instead, you suspect a sudden increase in specific warning messages or a change in the frequency of certain events. How would you use command-line tools to identify a sudden spike in a particular log pattern (e.g., \"WARN: Database connection lost\") within the last hour, compared to the previous hour, in a continuously written log file (`/var/log/myapp/app.log`)?",
+    "A newly deployed Linux server is experiencing intermittent hardware-related issues, such as USB devices disconnecting randomly, or unexpected kernel panics. You suspect issues at the kernel or hardware driver level. How would you use `dmesg` to investigate these problems, including viewing recent kernel messages, filtering for specific hardware, and understanding its persistence?"
   ]
 }
