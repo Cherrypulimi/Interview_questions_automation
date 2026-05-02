@@ -1,6 +1,5 @@
 {
   "pending_topics": [
-    "Linux in Cloud Environments (EC2 instance management basics)",
     "Linux Automation for DevOps (cron scripts, monitoring scripts)",
     "Real-world Linux Scenario Questions for DevOps Interviews"
   ],
@@ -31,16 +30,10 @@
     "Linux Boot Process (BIOS, GRUB, systemd boot sequence)",
     "Linux Troubleshooting for DevOps (disk full, high CPU, memory issues)",
     "Log Analysis & Debugging Techniques",
-    "Linux for CI/CD Environments (permissions, automation scripts)"
+    "Linux for CI/CD Environments (permissions, automation scripts)",
+    "Linux in Cloud Environments (EC2 instance management basics)"
   ],
   "recent_questions": [
-    "You have multiple SSH keys for different projects and servers. How can `ssh-agent` and `ssh-add` help you manage these keys more efficiently, avoiding repeated passphrase entries? Explain the workflow and its benefits.",
-    "Describe the process of configuring a static IPv4 address, subnet mask, and default gateway on a modern Linux system (e.g., RHEL/CentOS 8+, Ubuntu 20.04+) using command-line tools, ensuring the configuration persists across reboots. How does this approach differ from configuring an interface to use DHCP?",
-    "A critical microservice running on your Linux server is failing to connect to an external API, reporting \"Name or service not known\" errors. Outline a systematic troubleshooting approach using command-line tools and configuration files to diagnose and resolve potential DNS resolution issues.",
-    "Explain the different types of hostnames (static, pretty, transient) in a modern Linux system and how they are managed. Demonstrate how to set a persistent static hostname for a server named `webserver01.example.com` and verify its configuration.",
-    "You need to configure a Linux server to send traffic destined for the `192.168.50.0/24` network segment through a specific gateway IP address, `10.0.0.254`, which is not the default gateway. Explain how to add this static route using the `ip` command and ensure it persists across reboots on a `systemd`-based distribution (e.g., using NetworkManager or `systemd-networkd`).",
-    "As a DevOps engineer, you frequently need to monitor network interface status and traffic. How would you use command-line tools to display the IP addresses and configuration of all active network interfaces, and then monitor real-time network traffic statistics for a specific interface (e.g., `eth0` or `enp0s3`)?",
-    "Write a Bash function named `validate_ipv4` that takes a single argument, which is expected to be an IPv4 address string. The function should return an exit code of `0` if the string represents a syntactically valid IPv4 address (e.g., `192.168.1.1`, `10.0.0.255`) and `1` otherwise. Demonstrate how to use this function in a simple script.",
     "Using `nmcli`, how would you configure a specific network interface (e.g., `enp0s3`) to obtain its IP address, subnet mask, and default gateway automatically via DHCP? After setting this, how would you then override the DNS servers to use `8.8.8.8` and `8.8.4.4` for that specific connection, ensuring these settings persist and are applied immediately?",
     "As a DevOps engineer, you're tasked with configuring a new web server. Explain how `firewalld` manages network traffic, specifically detailing the concept of \"zones\" and \"services\". Provide commands to permanently open TCP port 80 (HTTP) and 443 (HTTPS) for public access on the `public` zone, and then verify the configuration.",
     "You need to temporarily block all incoming SSH traffic (port 22 TCP) from a specific problematic IP address, `192.168.1.100`, using `iptables`. After verifying the block, how would you make this rule persistent across reboots on a system that doesn't use `firewalld` by default (e.g., an older CentOS or a minimal Debian setup)?",
@@ -83,6 +76,13 @@
     "After a CI/CD pipeline successfully builds application artifacts (e.g., JAR files, compiled binaries, static web assets), these need to be deployed to a target server. How would you manage the permissions of these deployed artifacts and their target directories to ensure they are accessible by the application runtime user but not writable by other system users or the deployment user post-deployment?",
     "Your application has dynamic dependencies that might change or need specific versions. How would you leverage Linux package managers (like `apt` or `yum`) within a CI/CD pipeline to ensure that these dependencies are consistently installed and managed across different build stages or deployment environments, potentially even using a custom package repository?",
     "A CI/CD pipeline step requires installing a kernel module or making changes to system-wide configuration files (e.g., `/etc/sysctl.conf`). Discuss the security risks of granting `sudo` access to the CI/CD agent for such tasks. What are more secure alternatives or best practices to perform these elevated operations within a CI/CD context?",
-    "Automating Service Management in Deployment Scripts: Your CI/CD pipeline deploys a new version of a service. As part of the deployment script, you need to stop the old service, deploy new files, and then start/enable the new version, ensuring proper error handling and status checks. How would you script this using `systemctl` commands, including checks for service status and handling potential failures?"
+    "Automating Service Management in Deployment Scripts: Your CI/CD pipeline deploys a new version of a service. As part of the deployment script, you need to stop the old service, deploy new files, and then start/enable the new version, ensuring proper error handling and status checks. How would you script this using `systemctl` commands, including checks for service status and handling potential failures?",
+    "You've launched a new EC2 instance. Describe the essential steps to securely connect to it via SSH from your local machine, including the role of the `.pem` file and best practices for its permissions. What if you lose your `.pem` key?",
+    "Explain the key differences between stopping and terminating an EC2 instance. What are the implications for billing, data persistence, and IP addresses in each scenario? When would you choose one over the other?",
+    "You need to automatically configure a newly launched EC2 instance with a web server and a custom `systemd` service upon its first boot. How would you achieve this using EC2 User Data and `cloud-init`? Provide a simple example of a User Data script that installs Nginx and starts it.",
+    "An application running on an EC2 instance requires more storage. Describe the process of attaching a new Amazon EBS volume to an existing EC2 instance, making it available to the Linux operating system, and mounting it. Include the necessary Linux commands.",
+    "Explain the purpose and utility of the EC2 Instance Metadata Service. How can a running EC2 instance query its own metadata (e.g., instance ID, region, public IP) using standard Linux tools? Provide an example command.",
+    "You've lost SSH connectivity to an EC2 instance, and the application running on it is unresponsive. Describe a systematic approach to troubleshoot this issue from the AWS console, including checks you'd perform and potential recovery steps, assuming the instance is still 'running' in the console.",
+    "You've deployed a custom application on an EC2 instance. To ensure it starts automatically on boot, can be managed easily, and its logs are handled by `systemd`, how would you configure it as a `systemd` service? Provide a basic example of a `.service` file for a simple Python application and explain the commands to enable and start it."
   ]
 }
