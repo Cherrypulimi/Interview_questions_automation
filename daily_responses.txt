@@ -6874,3 +6874,457 @@ Solution: Configuring a custom application as a `systemd` service on an EC2 inst
     *   View real-time logs: `journalctl -u my-python-app.service -f`
 
 
+--- Date: 2026-05-03 06:16:19 ---
+Topic: Linux Automation for DevOps (cron scripts, monitoring scripts)
+Description: DevOps Engineers, level up your Linux automation game! 🚀 Mastering cron jobs, monitoring scripts, and network configuration is crucial for robust infrastructure. Swipe through these 7 in-depth interview questions and solutions designed to test your practical automation skills and ensure your systems run smoothly and reliably. #DevOps #Linux #Automation #interviewprep #dataengineering #CloudEngineering #SRE
+
+Q1: You need to set up a daily `cron` job that checks the network connectivity to a critical external service (e.g., `api.example.com`) and sends an email alert if it fails. Describe the `cron` entry and a simple shell script for this task, including considerations for environment variables and output redirection.
+Solution: Automating network checks with `cron` is a common DevOps task. The solution involves creating a script to perform the check and configuring `cron` to run it.
+
+*   Shell Script (`check_connectivity.sh`):
+    ```bash
+    #!/bin/bash
+
+    TARGET_HOST="api.example.com"
+    EMAIL_RECIPIENT="devops@yourcompany.com"
+    LOG_FILE="/var/log/connectivity_check.log"
+
+    # Ensure full path for commands in cron environment
+    PING_CMD="/usr/bin/ping"
+    MAIL_CMD="/usr/bin/mailx"
+    HOSTNAME_CMD="/usr/bin/hostname"
+
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Checking connectivity to $TARGET_HOST..." >> "$LOG_FILE"
+
+    if ! "$PING_CMD" -c 3 "$TARGET_HOST" >/dev/null 2>&1; then
+        ALERT_SUBJECT="CRITICAL: Network connectivity to $TARGET_HOST FAILED on $("$HOSTNAME_CMD")"
+        ALERT_BODY="Connectivity to $TARGET_HOST failed at $(date '+%Y-%m-%d %H:%M:%S'). Please investigate.\nHost: $("$HOSTNAME_CMD")\nLog: $LOG_FILE"
+        echo "$ALERT_BODY" >> "$LOG_FILE"
+        echo -e "$ALERT_BODY" | "$MAIL_CMD" -s "$ALERT_SUBJECT" "$EMAIL_RECIPIENT"
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Alert email sent." >> "$LOG_FILE"
+    else
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Connectivity to $TARGET_HOST OK." >> "$LOG_FILE"
+    fi
+    ```
+
+*   Permissions: Make the script executable: `chmod +x /usr/local/bin/check_connectivity.sh` (or your chosen path).
+
+*   Cron Entry: Add this line to the crontab (e.g., `crontab -e` for the current user, or `/etc/cron.d/connectivity_check` for a system-wide job).
+    ```cron
+    # Run daily at 3:00 AM
+    0 3 * * * /usr/local/bin/check_connectivity.sh >/dev/null 2>&1
+    ```
+
+*   Considerations:
+    *   Environment Variables: `cron` jobs run with a minimal `PATH`. Always use full paths for commands like `/usr/bin/ping` or set `PATH` explicitly within the script or at the top of the crontab (`PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`).
+    *   Output Redirection: The `>/dev/null 2>&1` at the end of the `cron` entry prevents `cron` from emailing you the script's standard output and standard error every time it runs, which can quickly fill your inbox. The script itself handles specific logging and email alerts for failures.
+
+Q2: You are tasked with writing a shell script that ensures a specific network interface (`eth0`) on a RHEL/CentOS server is configured with a static IP address, netmask, gateway, and DNS servers. The script should be idempotent, meaning it can be run multiple times without unintended side effects. Outline the script's logic and key commands.
+Solution: Idempotent scripts are fundamental in automation. For RHEL/CentOS, network configurations are typically managed via `ifcfg` files. The script will check the current configuration and only apply changes if necessary.
+
+*   Script Logic (`configure_static_ip.sh`):
+    ```bash
+    #!/bin/bash
+
+    IFACE="eth0"
+    CONFIG_FILE="/etc/sysconfig/network-scripts/ifcfg-$IFACE"
+    IP_ADDR="192.168.1.100"
+    NETMASK="255.255.255.0"
+    GATEWAY="192.168.1.1"
+    DNS1="8.8.8.8"
+    DNS2="8.8.4.4"
+
+    echo "Checking network configuration for $IFACE..."
+
+    # Check if the interface configuration file exists
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Configuration file $CONFIG_FILE not found. Creating it."
+        sudo touch "$CONFIG_FILE"
+    fi
+
+    # Function to update a parameter if it's different or missing
+    update_param() {
+        local param="$1"
+        local value="$2"
+        if ! grep -q "^$param=\"$value\"" "$CONFIG_FILE"; then
+            echo "Updating $param to $value..."
+            sudo sed -i "/^$param=/d" "$CONFIG_FILE" # Remove existing line
+            echo "$param=\"$value\"" | sudo tee -a "$CONFIG_FILE" >/dev/null
+            return 0 # Indicates a change was made
+        fi
+        return 1 # No change needed
+    }
+
+    # Apply base configurations
+    update_param "BOOTPROTO" "none" && changed=true
+    update_param "ONBOOT" "yes" && changed=true
+    update_param "IPADDR" "$IP_ADDR" && changed=true
+    update_param "NETMASK" "$NETMASK" && changed=true
+    update_param "GATEWAY" "$GATEWAY" && changed=true
+    update_param "DNS1" "$DNS1" && changed=true
+    update_param "DNS2" "$DNS2" && changed=true
+
+    # Restart network service if changes were made
+    if [ "$changed" = true ]; then
+        echo "Configuration updated. Restarting network service for $IFACE..."
+        sudo nmcli connection reload "$IFACE" >/dev/null 2>&1 || sudo nmcli connection up "$IFACE" >/dev/null 2>&1 || sudo systemctl restart network.service
+        echo "Network service restarted."
+    else
+        echo "Network configuration for $IFACE is already correct. No changes applied."
+    fi
+    ```
+
+*   Key Commands & Concepts:
+    *   `grep -q`: Used to quietly check if a pattern exists in a file. If it exists, `grep -q` returns an exit code of 0 (success); otherwise, 1 (failure).
+    *   `sed -i`: Used for in-place editing of files. `sed -i "/^$param=/d"` deletes any existing line starting with the parameter, ensuring only one definition exists.
+    *   `tee -a`: Appends the new parameter definition to the configuration file. Using `sudo tee` allows writing to files owned by root.
+    *   `nmcli` or `systemctl restart network.service`: After modifying `ifcfg` files, the network service or specific connection needs to be reloaded/restarted for changes to take effect. `nmcli` is preferred for NetworkManager-managed interfaces.
+    *   Idempotency: The script checks the current state before making changes. It only modifies the file and restarts the service if a parameter value is different from the desired state, preventing unnecessary reconfigurations and service disruptions.
+
+Q3: Develop a shell script that continuously monitors DNS resolution for a critical domain (`internal-app.local`). If the resolution fails or returns an incorrect IP address, the script should log the incident with a timestamp and prevent excessive logging. How would you schedule this script to run every 5 minutes using `cron`, ensuring its output doesn't spam your inbox?
+Solution: This script focuses on proactive monitoring and intelligent logging to avoid noise.
+
+*   Shell Script (`monitor_dns.sh`):
+    ```bash
+    #!/bin/bash
+
+    TARGET_DOMAIN="internal-app.local"
+    EXPECTED_IP="192.168.0.10" # Or an empty string if any resolution is acceptable
+    LOG_FILE="/var/log/dns_monitor.log"
+    LAST_ERROR_FILE="/tmp/dns_monitor_last_error.txt"
+    MAIL_RECIPIENT="devops@yourcompany.com"
+
+    # Ensure full path for commands
+    DIG_CMD="/usr/bin/dig"
+    HOSTNAME_CMD="/usr/bin/hostname"
+    MAILX_CMD="/usr/bin/mailx"
+
+    CURRENT_IP=$("$DIG_CMD" +short "$TARGET_DOMAIN")
+    TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
+    HOST_NAME=$("$HOSTNAME_CMD")
+
+    ERROR_DETECTED=false
+    ALERT_MESSAGE=""
+
+    if [ -z "$CURRENT_IP" ]; then
+        ALERT_MESSAGE="DNS resolution for $TARGET_DOMAIN FAILED on $HOST_NAME."
+        ERROR_DETECTED=true
+    elif [ -n "$EXPECTED_IP" ] && [ "$CURRENT_IP" != "$EXPECTED_IP" ]; then
+        ALERT_MESSAGE="DNS resolution for $TARGET_DOMAIN returned incorrect IP ($CURRENT_IP) instead of $EXPECTED_IP on $HOST_NAME."
+        ERROR_DETECTED=true
+    fi
+
+    if $ERROR_DETECTED; then
+        echo "$TIMESTAMP - $ALERT_MESSAGE" >> "$LOG_FILE"
+        # Prevent excessive email alerts: only send if this is a new error or a different error
+        if [ ! -f "$LAST_ERROR_FILE" ] || [ "$(cat "$LAST_ERROR_FILE")" != "$ALERT_MESSAGE" ]; then
+            echo "$ALERT_MESSAGE" > "$LAST_ERROR_FILE"
+            echo -e "$ALERT_MESSAGE\nLog: $LOG_FILE" | "$MAILX_CMD" -s "CRITICAL: DNS Issue for $TARGET_DOMAIN on $HOST_NAME" "$MAIL_RECIPIENT"
+            echo "$TIMESTAMP - Alert email sent." >> "$LOG_FILE"
+        fi
+    else
+        # If error was present, clear it and log recovery
+        if [ -f "$LAST_ERROR_FILE" ]; then
+            RECOVERY_MESSAGE="$TARGET_DOMAIN DNS resolution recovered on $HOST_NAME."
+            echo "$TIMESTAMP - $RECOVERY_MESSAGE" >> "$LOG_FILE"
+            echo -e "$RECOVERY_MESSAGE\nLog: $LOG_FILE" | "$MAILX_CMD" -s "RECOVERY: DNS Issue for $TARGET_DOMAIN on $HOST_NAME" "$MAIL_RECIPIENT"
+            rm -f "$LAST_ERROR_FILE"
+            echo "$TIMESTAMP - Recovery email sent and error state cleared." >> "$LOG_FILE"
+        fi
+        echo "$TIMESTAMP - DNS resolution for $TARGET_DOMAIN OK." >> "$LOG_FILE"
+    fi
+    ```
+
+*   Permissions: `chmod +x /usr/local/bin/monitor_dns.sh`.
+
+*   Cron Entry: To run every 5 minutes, add this to your crontab:
+    ```cron
+    # Run DNS monitor every 5 minutes
+    */5 * * * * /usr/local/bin/monitor_dns.sh >/dev/null 2>&1
+    ```
+
+*   Preventing Excessive Logging/Alerts:
+    *   `LAST_ERROR_FILE`: This file acts as a state tracker. An email alert is only sent if `ERROR_DETECTED` is true AND either `LAST_ERROR_FILE` doesn't exist (first error) or its content is different from the current `ALERT_MESSAGE` (a new or changed error). This prevents spamming if the same error persists.
+    *   Recovery Notification: When the DNS resolution recovers, the `LAST_ERROR_FILE` is removed, and a recovery email is sent, providing full lifecycle visibility.
+    *   Output Redirection: `>/dev/null 2>&1` in the `cron` entry ensures that `cron` itself doesn't generate emails for every script execution, relying solely on the script's internal email logic.
+
+Q4: You have an application that generates temporary log files in `/var/log/myapp/temp_logs/` with a naming convention like `app_temp_YYYYMMDD_HHMMSS.log`. These files are not managed by `logrotate` and need to be deleted after 7 days. Design a `cron` job and a corresponding shell script to automate this cleanup, ensuring it only targets the specified files and handles potential errors gracefully.
+Solution: Automating cleanup of unmanaged temporary files is crucial for disk space management. The `find` command is ideal for this task.
+
+*   Shell Script (`cleanup_temp_logs.sh`):
+    ```bash
+    #!/bin/bash
+
+    LOG_DIR="/var/log/myapp/temp_logs"
+    LOG_PATTERN="app_temp_*.log"
+    DAYS_TO_KEEP=7
+    CLEANUP_LOG="/var/log/cleanup_temp_logs.log"
+
+    # Ensure full path for commands
+    FIND_CMD="/usr/bin/find"
+    ECHO_CMD="/usr/bin/echo"
+    DATE_CMD="/usr/bin/date"
+
+    "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Starting cleanup of old temporary logs in $LOG_DIR" >> "$CLEANUP_LOG"
+
+    if [ ! -d "$LOG_DIR" ]; then
+        "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Error: Log directory $LOG_DIR does not exist. Exiting." >> "$CLEANUP_LOG"
+        exit 1
+    fi
+
+    # Find and delete files older than DAYS_TO_KEEP days, matching the pattern
+    # -mtime +N: file's data was last modified N*24 hours ago. (+7 means older than 7 days)
+    # -type f: only consider regular files
+    # -name: only consider files matching the pattern
+    # -delete: delete the found files (be careful!)
+    DELETED_FILES=$("$FIND_CMD" "$LOG_DIR" -name "$LOG_PATTERN" -type f -mtime +"$DAYS_TO_KEEP" -print 2>/dev/null)
+
+    if [ -n "$DELETED_FILES" ]; then
+        "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Deleting the following files:" >> "$CLEANUP_LOG"
+        "$ECHO_CMD" "$DELETED_FILES" | "$ECHO_CMD" -e "$(sed 's/^/    /' <<< "$(cat -)")" >> "$CLEANUP_LOG"
+        "$FIND_CMD" "$LOG_DIR" -name "$LOG_PATTERN" -type f -mtime +"$DAYS_TO_KEEP" -delete 2>> "$CLEANUP_LOG"
+        if [ $? -eq 0 ]; then
+            "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Cleanup completed successfully." >> "$CLEANUP_LOG"
+        else
+            "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Error during cleanup. Check above messages." >> "$CLEANUP_LOG"
+        fi
+    else
+        "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - No old temporary logs found for cleanup." >> "$CLEANUP_LOG"
+    fi
+
+    "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Cleanup script finished." >> "$CLEANUP_LOG"
+    ```
+
+*   Permissions: `chmod +x /usr/local/bin/cleanup_temp_logs.sh`.
+
+*   Cron Entry: Schedule this script to run daily, for example, at 2:30 AM.
+    ```cron
+    # Run daily cleanup of temporary logs at 2:30 AM
+    30 2 * * * /usr/local/bin/cleanup_temp_logs.sh >/dev/null 2>&1
+    ```
+
+*   Key Concepts:
+    *   `find` command: The core of the solution. `find <path> -name <pattern> -type f -mtime +N -delete` is a powerful and efficient way to locate and delete files based on age and name. Always test `find` with `-print` first before using `-delete`.
+    *   Error Handling & Logging: The script checks if the directory exists and logs its actions and any errors to a dedicated `CLEANUP_LOG` file. This is crucial for auditing and troubleshooting automated tasks.
+    *   Output Redirection: The `>/dev/null 2>&1` in the `cron` entry ensures `cron` doesn't send emails for every run, as the script handles its own logging.
+
+Q5: A `cron` job needs to perform a task that requires root privileges (e.g., restarting a network service or modifying a system file). Describe the secure best practices for configuring such a `cron` job, including using `sudo` without passwords, specifying the command path, and minimizing the attack surface. Provide an example `cron` entry and a snippet of a script.
+Solution: Running `cron` jobs with root privileges requires careful security considerations to prevent privilege escalation.
+
+*   Best Practices:
+    1.  Dedicated User: Whenever possible, avoid running `cron` jobs directly as `root`. Instead, create a dedicated system user (e.g., `app_monitor_user`) with minimal privileges. Grant this user `sudo` access *only* to the specific script or command it needs to execute as root.
+    2.  `sudoers` Configuration: Edit `/etc/sudoers` (using `visudo`) to allow the dedicated user to run the specific script without a password. This is key for automation.
+        ```
+        # Allow app_monitor_user to run specific script as root without password
+        app_monitor_user ALL=(root) NOPASSWD: /usr/local/bin/restart_service.sh
+        ```
+    3.  Script Security:
+        *   Full Paths: Always use full paths for all commands within the script (e.g., `/usr/bin/systemctl` instead of `systemctl`).
+        *   Minimal Logic: The script should contain only the absolute necessary logic for the privileged task. Avoid complex operations or user input.
+        *   Permissions: The script itself should be owned by `root` and have restrictive permissions (e.g., `chmod 700 /usr/local/bin/restart_service.sh`), preventing unauthorized modification.
+    4.  `cron` Entry: The `cron` entry should be for the dedicated user, and it should explicitly call `sudo` for the script.
+
+*   Example Script (`restart_service.sh`):
+    ```bash
+    #!/bin/bash
+    # This script must be owned by root and have 700 permissions
+    # chmod 700 /usr/local/bin/restart_service.sh
+    # chown root:root /usr/local/bin/restart_service.sh
+
+    SERVICE_NAME="nginx"
+    LOG_FILE="/var/log/restart_nginx.log"
+
+    # Use full paths for commands
+    SYSTEMCTL_CMD="/usr/bin/systemctl"
+    ECHO_CMD="/usr/bin/echo"
+    DATE_CMD="/usr/bin/date"
+
+    "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Attempting to restart $SERVICE_NAME..." >> "$LOG_FILE"
+    "$SYSTEMCTL_CMD" restart "$SERVICE_NAME" >> "$LOG_FILE" 2>&1
+
+    if [ $? -eq 0 ]; then
+        "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - $SERVICE_NAME restarted successfully." >> "$LOG_FILE"
+    else
+        "$ECHO_CMD" "$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S') - Error restarting $SERVICE_NAME. Check logs." >> "$LOG_FILE"
+    fi
+    ```
+
+*   Example `cron` Entry: (Assuming `app_monitor_user` is the dedicated user)
+    ```cron
+    # In app_monitor_user's crontab (crontab -e -u app_monitor_user)
+    # Restart nginx daily at 4:00 AM
+    0 4 * * * /usr/bin/sudo /usr/local/bin/restart_service.sh >/dev/null 2>&1
+    ```
+
+*   Minimizing Attack Surface: By granting `NOPASSWD` only to a specific, hardened script, you limit what an attacker can do if they compromise the `app_monitor_user` account. They cannot run arbitrary `root` commands, only the permitted script.
+
+Q6: You need to automate a check to ensure a specific static route (e.g., `192.168.10.0/24 via 10.0.0.1 dev eth0`) is present in the server's routing table. If the route is missing, the script should add it and send a notification. Outline a shell script to perform this check and correction, and explain how you'd schedule it as a `cron` job.
+Solution: Automating route management ensures network connectivity to critical segments. This script will check, add, and notify if a route is missing.
+
+*   Shell Script (`manage_static_route.sh`):
+    ```bash
+    #!/bin/bash
+
+    TARGET_NETWORK="192.168.10.0/24"
+    GATEWAY="10.0.0.1"
+    INTERFACE="eth0"
+    FULL_ROUTE_SPEC="$TARGET_NETWORK via $GATEWAY dev $INTERFACE"
+    LOG_FILE="/var/log/static_route_monitor.log"
+    MAIL_RECIPIENT="devops@yourcompany.com"
+    LAST_STATUS_FILE="/tmp/static_route_status.txt"
+
+    # Ensure full path for commands
+    IP_CMD="/usr/sbin/ip"
+    GREP_CMD="/usr/bin/grep"
+    HOSTNAME_CMD="/usr/bin/hostname"
+    MAILX_CMD="/usr/bin/mailx"
+    ECHO_CMD="/usr/bin/echo"
+    DATE_CMD="/usr/bin/date"
+
+    TIMESTAMP="$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S')"
+    HOST_NAME=$("$HOSTNAME_CMD")
+    STATUS_MESSAGE=""
+    ALERT_SENT=false
+
+    "$ECHO_CMD" "$TIMESTAMP - Checking for route: $FULL_ROUTE_SPEC" >> "$LOG_FILE"
+
+    if ! "$IP_CMD" route show | "$GREP_CMD" -q "$FULL_ROUTE_SPEC"; then
+        STATUS_MESSAGE="Route $FULL_ROUTE_SPEC is MISSING on $HOST_NAME. Attempting to add..."
+        "$ECHO_CMD" "$TIMESTAMP - $STATUS_MESSAGE" >> "$LOG_FILE"
+
+        sudo "$IP_CMD" route add "$TARGET_NETWORK" via "$GATEWAY" dev "$INTERFACE" >> "$LOG_FILE" 2>&1
+
+        if [ $? -eq 0 ]; then
+            STATUS_MESSAGE="Route $FULL_ROUTE_SPEC successfully ADDED on $HOST_NAME."
+            "$ECHO_CMD" "$TIMESTAMP - $STATUS_MESSAGE" >> "$LOG_FILE"
+            # Ensure persistence across reboots (e.g., for RHEL/CentOS)
+            # This example only adds it dynamically. For persistence, you'd modify network config files.
+            # Example for RHEL/CentOS: echo "$TARGET_NETWORK via $GATEWAY dev $INTERFACE" | sudo tee -a /etc/sysconfig/network-scripts/route-$INTERFACE >/dev/null
+            # For Debian/Ubuntu (netplan): Update YAML and apply: sudo netplan apply
+            PERSISTENCE_INFO="Please ensure route persistence by updating network configuration files (e.g., /etc/sysconfig/network-scripts/route-$INTERFACE or netplan config)."
+            ALERT_BODY="$STATUS_MESSAGE\n$PERSISTENCE_INFO\nHost: $HOST_NAME\nLog: $LOG_FILE"
+            ALERT_SUBJECT="ALERT: Static Route Added on $HOST_NAME"
+            if [ "$(cat "$LAST_STATUS_FILE" 2>/dev/null)" != "ADDED" ]; then
+                "$ECHO_CMD" "ADDED" > "$LAST_STATUS_FILE"
+                "$ECHO_CMD" -e "$ALERT_BODY" | "$MAILX_CMD" -s "$ALERT_SUBJECT" "$MAIL_RECIPIENT"
+                "$ECHO_CMD" "$TIMESTAMP - Alert email sent." >> "$LOG_FILE"
+                ALERT_SENT=true
+            fi
+        else
+            STATUS_MESSAGE="Failed to add route $FULL_ROUTE_SPEC on $HOST_NAME. Manual intervention required."
+            "$ECHO_CMD" "$TIMESTAMP - $STATUS_MESSAGE" >> "$LOG_FILE"
+            ALERT_BODY="$STATUS_MESSAGE\nHost: $HOST_NAME\nLog: $LOG_FILE"
+            ALERT_SUBJECT="CRITICAL: Failed to Add Static Route on $HOST_NAME"
+            if [ "$(cat "$LAST_STATUS_FILE" 2>/dev/null)" != "FAILED" ]; then
+                "$ECHO_CMD" "FAILED" > "$LAST_STATUS_FILE"
+                "$ECHO_CMD" -e "$ALERT_BODY" | "$MAILX_CMD" -s "$ALERT_SUBJECT" "$MAIL_RECIPIENT"
+                "$ECHO_CMD" "$TIMESTAMP - Critical alert email sent." >> "$LOG_FILE"
+                ALERT_SENT=true
+            fi
+        fi
+    else
+        STATUS_MESSAGE="Route $FULL_ROUTE_SPEC is present and OK on $HOST_NAME."
+        "$ECHO_CMD" "$TIMESTAMP - $STATUS_MESSAGE" >> "$LOG_FILE"
+        # If previously added/failed, send recovery and clear status
+        if [ -f "$LAST_STATUS_FILE" ]; then
+            RECOVERY_MESSAGE="Route $FULL_ROUTE_SPEC is now present and OK on $HOST_NAME."
+            "$ECHO_CMD" "$TIMESTAMP - $RECOVERY_MESSAGE" >> "$LOG_FILE"
+            "$ECHO_CMD" -e "$RECOVERY_MESSAGE\nHost: $HOST_NAME\nLog: $LOG_FILE" | "$MAILX_CMD" -s "RECOVERY: Static Route OK on $HOST_NAME" "$MAIL_RECIPIENT"
+            rm -f "$LAST_STATUS_FILE"
+            "$ECHO_CMD" "$TIMESTAMP - Recovery email sent and status cleared." >> "$LOG_FILE"
+            ALERT_SENT=true
+        fi
+    fi
+    ```
+
+*   Permissions: `chmod +x /usr/local/bin/manage_static_route.sh`.
+
+*   Cron Entry: Schedule to run every 10 minutes to ensure the route is consistently present.
+    ```cron
+    # Run route management every 10 minutes
+    */10 * * * * /usr/local/bin/manage_static_route.sh >/dev/null 2>&1
+    ```
+
+*   Key Concepts:
+    *   `ip route show` and `grep -q`: Used to check for the existence of the specific route in the kernel's routing table.
+    *   `sudo ip route add`: Adds the route dynamically. This command requires root privileges. The script assumes appropriate `sudoers` configuration if run by a non-root user (similar to the previous question's solution).
+    *   Persistence: Dynamically added routes are lost on reboot. For permanent changes, the script would need to modify system-specific network configuration files (e.g., `/etc/sysconfig/network-scripts/route-eth0` on RHEL/CentOS or `/etc/netplan/*.yaml` on Ubuntu/Debian, followed by `netplan apply`). The example includes a comment about this.
+    *   State Tracking (`LAST_STATUS_FILE`): Prevents repetitive notifications for a continuous issue or successful addition. It tracks the last known state (e.g., 'ADDED', 'FAILED') and only sends a new alert if the state changes or if it's a first-time detection. A recovery notification is sent when the issue is resolved.
+
+Q7: You have a fleet of servers whose hostnames need to be dynamically updated based on a value retrieved from an external API or a configuration management system (e.g., `consul` or `etcd`). Design a shell script that fetches a new hostname and applies it, ensuring the change is persistent across reboots. How would you schedule this script to run periodically using `cron` without causing constant reboots or service interruptions?
+Solution: Dynamic hostname management is common in cloud and containerized environments. This script fetches, compares, and updates the hostname persistently and without interruption.
+
+*   Shell Script (`update_hostname.sh`):
+    ```bash
+    #!/bin/bash
+
+    # Example: Fetch hostname from a hypothetical API endpoint
+    # Replace with your actual API endpoint or CM system lookup (e.g., `curl http://consul.service.local:8500/v1/kv/hostnames/$(hostname -i)`) 
+    API_ENDPOINT="http://api.example.com/hostname/$(/usr/bin/hostname -i)"
+    LOG_FILE="/var/log/hostname_update.log"
+    MAIL_RECIPIENT="devops@yourcompany.com"
+
+    # Ensure full path for commands
+    CURL_CMD="/usr/bin/curl"
+    HOSTNAMECTL_CMD="/usr/bin/hostnamectl"
+    HOSTNAME_CMD="/usr/bin/hostname"
+    MAILX_CMD="/usr/bin/mailx"
+    ECHO_CMD="/usr/bin/echo"
+    DATE_CMD="/usr/bin/date"
+
+    TIMESTAMP="$("$DATE_CMD" '+%Y-%m-%d %H:%M:%S')"
+    CURRENT_HOSTNAME=$("$HOSTNAME_CMD")
+    HOST_IP=$("$HOSTNAME_CMD" -i)
+
+    "$ECHO_CMD" "$TIMESTAMP - Checking for new hostname from $API_ENDPOINT..." >> "$LOG_FILE"
+
+    # Fetch the desired hostname. Add error handling for curl failures.
+    DESIRED_HOSTNAME=$("$CURL_CMD" -s "$API_ENDPOINT")
+
+    if [ -z "$DESIRED_HOSTNAME" ]; then
+        "$ECHO_CMD" "$TIMESTAMP - Error: Could not fetch desired hostname from API. Check API or network. Current hostname: $CURRENT_HOSTNAME" >> "$LOG_FILE"
+        "$ECHO_CMD" -e "Error fetching hostname from API on $HOST_IP. Current hostname: $CURRENT_HOSTNAME\nLog: $LOG_FILE" | "$MAILX_CMD" -s "WARNING: Hostname API Failure on $HOST_IP" "$MAIL_RECIPIENT"
+        exit 1
+    fi
+
+    # Trim whitespace from desired hostname
+    DESIRED_HOSTNAME=$(echo "$DESIRED_HOSTNAME" | xargs)
+
+    if [ "$CURRENT_HOSTNAME" != "$DESIRED_HOSTNAME" ]; then
+        "$ECHO_CMD" "$TIMESTAMP - Hostname mismatch detected. Current: '$CURRENT_HOSTNAME', Desired: '$DESIRED_HOSTNAME'. Updating..." >> "$LOG_FILE"
+        
+        # Apply the new hostname persistently using hostnamectl
+        sudo "$HOSTNAMECTL_CMD" set-hostname "$DESIRED_HOSTNAME" >> "$LOG_FILE" 2>&1
+
+        if [ $? -eq 0 ]; then
+            "$ECHO_CMD" "$TIMESTAMP - Hostname successfully updated to '$DESIRED_HOSTNAME'." >> "$LOG_FILE"
+            ALERT_SUBJECT="INFO: Hostname Updated on $HOST_IP"
+            ALERT_BODY="Hostname on $HOST_IP updated from '$CURRENT_HOSTNAME' to '$DESIRED_HOSTNAME' at $TIMESTAMP.\nLog: $LOG_FILE"
+            "$ECHO_CMD" -e "$ALERT_BODY" | "$MAILX_CMD" -s "$ALERT_SUBJECT" "$MAIL_RECIPIENT"
+        else
+            "$ECHO_CMD" "$TIMESTAMP - Error: Failed to update hostname to '$DESIRED_HOSTNAME'." >> "$LOG_FILE"
+            ALERT_SUBJECT="CRITICAL: Hostname Update Failed on $HOST_IP"
+            ALERT_BODY="Failed to update hostname from '$CURRENT_HOSTNAME' to '$DESIRED_HOSTNAME' at $TIMESTAMP.\nHost: $HOST_IP\nLog: $LOG_FILE"
+            "$ECHO_CMD" -e "$ALERT_BODY" | "$MAILX_CMD" -s "$ALERT_SUBJECT" "$MAIL_RECIPIENT"
+            exit 1
+        fi
+    else
+        "$ECHO_CMD" "$TIMESTAMP - Hostname is already '$CURRENT_HOSTNAME'. No update needed." >> "$LOG_FILE"
+    fi
+    ```
+
+*   Permissions: `chmod +x /usr/local/bin/update_hostname.sh`.
+
+*   Cron Entry: Schedule this script to run periodically, for example, every hour. Since `hostnamectl` makes changes immediately and persistently without requiring a reboot, frequent checks are safe.
+    ```cron
+    # Run hourly to check and update hostname
+    0 * * * * /usr/local/bin/update_hostname.sh >/dev/null 2>&1
+    ```
+
+*   Key Concepts:
+    *   `curl`: Used to fetch data from the external API. Error handling for `curl` is important to manage network or API issues.
+    *   `hostnamectl set-hostname`: This command is the modern and preferred way to set the system hostname on `systemd`-based Linux distributions. It updates the kernel hostname, `/etc/hostname`, and `machine-info` (for `systemd`), ensuring persistence across reboots. Crucially, it does *not* require a reboot for the change to take effect.
+    *   Idempotency: The script first fetches the `DESIRED_HOSTNAME` and then compares it to the `CURRENT_HOSTNAME`. It only calls `hostnamectl set-hostname` if a change is actually needed, preventing unnecessary operations.
+    *   No Reboots/Interruptions: Because `hostnamectl` applies changes dynamically, running this script via `cron` will not cause service interruptions or require reboots, making it suitable for continuous automation.
+
+
