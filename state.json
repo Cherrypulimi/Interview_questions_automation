@@ -1,7 +1,5 @@
 {
-  "pending_topics": [
-    "Real-world Linux Scenario Questions for DevOps Interviews"
-  ],
+  "pending_topics": [],
   "covered_topics": [
     "Introduction to Linux & DevOps (Linux Distributions, Kernel, Shell)",
     "Linux File System Structure (/, /etc, /var, /home, /proc, /tmp)",
@@ -31,16 +29,10 @@
     "Log Analysis & Debugging Techniques",
     "Linux for CI/CD Environments (permissions, automation scripts)",
     "Linux in Cloud Environments (EC2 instance management basics)",
-    "Linux Automation for DevOps (cron scripts, monitoring scripts)"
+    "Linux Automation for DevOps (cron scripts, monitoring scripts)",
+    "Real-world Linux Scenario Questions for DevOps Interviews"
   ],
   "recent_questions": [
-    "Your company has a web server that needs to be accessible via HTTP (port 80) and HTTPS (port 443) from the entire public internet. However, SSH (port 22) access must be restricted to only internal network clients (e.g., `192.168.10.0/24`). How would you configure `firewalld` to implement these rules efficiently and securely, making sure the SSH restriction is enforced even if a service is accidentally added to the `public` zone?",
-    "You're troubleshooting a server experiencing high CPU load. Describe your step-by-step approach using `top` to identify the culprit process, including how to sort by CPU, understand process states, and then take action (e.g., `kill`).",
-    "A developer reports that their application is running slowly and suspects a memory leak. How would you use the `free` command to assess the current memory usage, distinguishing between used, free, buffered, and cached memory? What specific metrics would you pay close attention to, and what might they indicate about the system's health?",
-    "Your application server is exhibiting poor performance, and you suspect I/O bottlenecks or excessive swapping. How would you use `vmstat` to monitor system activity in real-time, specifically focusing on CPU, memory, I/O, and swap statistics? What key metrics in `vmstat` would you analyze to pinpoint whether the issue is CPU-bound, memory-bound, or I/O-bound?",
-    "A database server is experiencing slow query times, and you suspect disk I/O is the bottleneck. How would you use `iostat` to diagnose disk performance issues, specifically looking at read/write rates, queue lengths, and I/O utilization for specific devices? What `iostat` options would you use for continuous monitoring, and what would high values in `%util` or `await` typically indicate?",
-    "You need a custom monitoring script that runs every 5 minutes, checks the system's average CPU idle percentage using `vmstat`, and sends an alert if it drops below a certain threshold (e.g., 20%). Write a Bash script snippet that achieves this, including how to parse `vmstat` output and use a conditional statement.",
-    "A misbehaving process is consuming excessive resources and needs to be terminated. Explain the common signals used with the `kill` command (e.g., SIGTERM, SIGKILL) and when to use each. How would you identify the process ID (PID) of such a process using `ps` or `top`, and then gracefully attempt to terminate it, escalating if necessary?",
     "Explain the difference between \"CPU Utilization\" (as seen in `top`'s `%Cpu(s)` line) and \"Load Average\" (the three numbers in `top`'s header). Why might a server have high load average but low CPU utilization, or vice-versa? Provide practical examples of scenarios for each.",
     "Detail the initial stages of the Linux boot process, starting from the power-on self-test (POST) through the handoff to the bootloader. Explain the key differences and roles of BIOS/UEFI and the Master Boot Record (MBR) or GUID Partition Table (GPT) in this phase.",
     "Describe the primary functions of GRUB (Grand Unified Bootloader) in a Linux boot sequence. If a system fails to boot and drops to the GRUB rescue prompt, what steps would you typically take to diagnose and potentially recover the system to a bootable state?",
@@ -83,6 +75,13 @@
     "You have an application that generates temporary log files in `/var/log/myapp/temp_logs/` with a naming convention like `app_temp_YYYYMMDD_HHMMSS.log`. These files are not managed by `logrotate` and need to be deleted after 7 days. Design a `cron` job and a corresponding shell script to automate this cleanup, ensuring it only targets the specified files and handles potential errors gracefully.",
     "A `cron` job needs to perform a task that requires root privileges (e.g., restarting a network service or modifying a system file). Describe the secure best practices for configuring such a `cron` job, including using `sudo` without passwords, specifying the command path, and minimizing the attack surface. Provide an example `cron` entry and a snippet of a script.",
     "You need to automate a check to ensure a specific static route (e.g., `192.168.10.0/24 via 10.0.0.1 dev eth0`) is present in the server's routing table. If the route is missing, the script should add it and send a notification. Outline a shell script to perform this check and correction, and explain how you'd schedule it as a `cron` job.",
-    "You have a fleet of servers whose hostnames need to be dynamically updated based on a value retrieved from an external API or a configuration management system (e.g., `consul` or `etcd`). Design a shell script that fetches a new hostname and applies it, ensuring the change is persistent across reboots. How would you schedule this script to run periodically using `cron` without causing constant reboots or service interruptions?"
+    "You have a fleet of servers whose hostnames need to be dynamically updated based on a value retrieved from an external API or a configuration management system (e.g., `consul` or `etcd`). Design a shell script that fetches a new hostname and applies it, ensuring the change is persistent across reboots. How would you schedule this script to run periodically using `cron` without causing constant reboots or service interruptions?",
+    "A server is reporting \"No space left on device\" errors for an application, but `df -h` shows plenty of free space on the partition. What could be the underlying cause, and how would you diagnose and resolve this issue?",
+    "Users are reporting slow access and occasional timeouts when connecting to an internal web application (listening on port 8080 on IP 10.0.0.5) from a specific subnet (192.168.1.0/24). Other subnets can connect without issues. How would you systematically troubleshoot this network connectivity problem from both the client and server perspectives using standard Linux tools?",
+    "A critical backend service, `data_processor`, is consuming an unusually high amount of CPU, making the server sluggish. You need to understand *why* it's using so much CPU without stopping the service. How would you investigate the process's activity and the system calls it's making?",
+    "You need to create a new non-root user account (`app_user`) for a new application. This user should only be able to execute a specific script (`/opt/app/start_app.sh`) and restart a `systemd` service (`app.service`) without being able to run arbitrary commands as root. How would you configure this securely?",
+    "Your application generates large temporary report files in `/var/tmp/app_reports/`. Due to compliance, these files must be stored on a separate, dedicated disk partition (`/dev/sdb1`) for better isolation and to prevent filling the root partition. The application, however, expects them to be in `/var/tmp/app_reports/`. How would you achieve this without modifying the application's code, ensuring the mount persists across reboots?",
+    "A server intermittently fails to fully boot, getting stuck at a black screen or emergency mode. You've identified that a newly added network filesystem mount (`/mnt/nfs_share`) is the culprit when the NFS server is unavailable. How would you modify its `systemd` mount unit or `/etc/fstab` entry to ensure the system boots successfully even if the NFS share is unreachable, while still attempting to mount it?",
+    "You need to write a shell script that checks the health of several HTTP endpoints (e.g., `https://api.example.com/health`, `https://backend.example.com/status`). For each endpoint, it should record the HTTP status code and response time. If any endpoint returns a non-200 status code or takes longer than 2 seconds, it should log a warning with details."
   ]
 }
